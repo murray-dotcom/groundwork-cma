@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Groundwork CMA
 
-## Getting Started
+A broker-facing web application for generating Comparable Market Analysis (CMA) reports for Home Ground Real Estate. Pulls comparable sales from the Groundwork Supabase database, calculates market-derived price indications, generates AI-written market commentary, and exports branded A4 PDF reports.
 
-First, run the development server:
+## Stack
+
+- **Next.js 14** (App Router, TypeScript)
+- **Tailwind CSS** with Home Ground brand tokens
+- **@supabase/supabase-js** — reads `transactions` table in the Groundwork Supabase project
+- **@react-pdf/renderer** — client-side PDF generation
+- **@anthropic-ai/sdk** — 2-sentence market narrative via claude-sonnet-4-6
+- Deploy target: **Netlify**
+
+## Local setup
+
+### 1. Install
+
+```bash
+git clone https://github.com/murray-dotcom/groundwork-cma.git
+cd groundwork-cma
+npm install
+```
+
+### 2. Environment variables
+
+```bash
+cp .env.local.example .env.local
+```
+
+Fill in `.env.local`:
+
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Groundwork Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `ANTHROPIC_API_KEY` | Anthropic API key (narrative generation) |
+
+### 3. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Fill in the CMA form: subject address, estate, property type, sizes, optional asking price, lookback period and size tolerance.
+2. Click **Generate CMA** — the app queries Supabase for comparable sales and calculates conservative / mid-market / strong price indications.
+3. Review the results screen. Broker can type inline notes in the table before exporting.
+4. Click **Download PDF** to save a branded A4 PDF.
 
-## Learn More
+## Supabase dependency
 
-To learn more about Next.js, take a look at the following resources:
+This app reads from the **Groundwork Supabase project** (`zumdsmmhsttnfruyvngq`). It has no local database.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Required `transactions` table columns
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | Primary key |
+| `address` | text | Property street address |
+| `estate` | text | e.g. `"Simbithi Eco Estate"` |
+| `property_type` | text | `freehold` or `sectional_title` |
+| `sectional_scheme` | text | Scheme name (sectional title only) |
+| `size_m2` | numeric | ERF or unit size |
+| `built_area_m2` | numeric | Built area (optional) |
+| `sale_price` | numeric | Registration price in ZAR |
+| `price_per_m2` | numeric | `sale_price / size_m2` |
+| `registration_date` | date | Transfer registration date |
+| `is_market_sale` | boolean | `true` for arm's-length sales |
 
-## Deploy on Vercel
+### RLS policy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Apply `supabase/migrations/002_cma_read_policy.sql` in the Groundwork Supabase SQL editor to allow the anon key to read the `transactions` table.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Netlify deployment
+
+Set these environment variables in the Netlify dashboard:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://zumdsmmhsttnfruyvngq.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
+ANTHROPIC_API_KEY=<Anthropic API key — add via Murray>
+```
+
+The `netlify.toml` is pre-configured for Next.js via `@netlify/plugin-nextjs`.
+
+## Brand
+
+| Token | Value |
+|---|---|
+| Sage | `#87825E` |
+| Dark Olive | `#585339` |
+| Bronze | `#B47A05` |
+| Cream | `#F5F1EA` |
+| Off-White | `#FAFAF8` |
+| Display font | Cinzel |
+| Body font | Cormorant Garamond |
+| UI / numbers | DM Sans |
