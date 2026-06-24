@@ -87,6 +87,12 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
 
   return (
     <main className="min-h-screen bg-off-white py-8 px-4">
+        {/* Low comps warning */}
+        {result.comps.length < 3 && (
+          <div className="max-w-5xl mx-auto mb-2 bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-yellow-800 font-cormorant text-sm">
+            Only {result.comps.length} comparable sale{result.comps.length === 1 ? "" : "s"} found — results may be indicative only.
+          </div>
+        )}
       <div className="max-w-5xl mx-auto space-y-6" id="cma-report">
 
         {/* SECTION 1 — Header */}

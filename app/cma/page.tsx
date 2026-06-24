@@ -26,7 +26,17 @@ export default async function CMAPage({ searchParams }: PageProps) {
   const lookback = Number(searchParams.lookback ?? 24);
   const tolerance = Number(searchParams.tolerance ?? 0.30);
 
-  const params = { address, estate, propertyType, sectionalScheme: searchParams.sectionalScheme, erfSize, builtArea, askingPrice, lookback, tolerance };
+  const params = {
+    address,
+    estate,
+    propertyType,
+    sectionalScheme: searchParams.sectionalScheme,
+    erfSize,
+    builtArea,
+    askingPrice,
+    lookback,
+    tolerance,
+  };
 
   let result;
   let error: string | null = null;
@@ -48,9 +58,27 @@ export default async function CMAPage({ searchParams }: PageProps) {
   if (error || !result) {
     return (
       <main className="min-h-screen bg-off-white flex items-center justify-center p-4">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <p className="font-cormorant text-lg text-olive mb-4">{error ?? "An unexpected error occurred."}</p>
           <Link href="/" className="font-cinzel text-xs tracking-widest text-bronze underline">← Back to form</Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (result.comps.length === 0) {
+    return (
+      <main className="min-h-screen bg-off-white flex items-center justify-center p-4">
+        <div className="text-center max-w-md bg-white border border-sage/20 rounded-lg p-8">
+          <div className="font-cinzel text-olive text-sm tracking-widest mb-4">HOME GROUND</div>
+          <p className="font-cormorant text-lg text-gray-700 mb-2">No comparable sales found in the selected period.</p>
+          <p className="font-cormorant text-sm text-sage mb-6">Try extending the lookback period or size tolerance.</p>
+          <Link
+            href={`/?${new URLSearchParams({ address, estate, propertyType, erfSize: String(erfSize) }).toString()}`}
+            className="bg-bronze text-cream font-cinzel tracking-[0.15em] text-xs px-6 py-3 rounded hover:bg-bronze/90 transition-colors"
+          >
+            Adjust Parameters
+          </Link>
         </div>
       </main>
     );
