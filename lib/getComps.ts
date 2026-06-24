@@ -48,8 +48,10 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   const { estate, propertyType, sectionalScheme, erfSize, builtArea, lookback, tolerance } = params;
   const sizeMin = Math.floor(erfSize * (1 - tolerance));
   const sizeMax = Math.ceil(erfSize * (1 + tolerance));
-  const cutoffDate = new Date();
-  cutoffDate.setMonth(cutoffDate.getMonth() - lookback);
+  // Equivalent to Postgres: current_date - interval '${lookback} months'
+  const now = new Date();
+  const cutoff = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - lookback, now.getUTCDate()));
+  const cutoffDateStr = cutoff.toISOString().split("T")[0];
 
   let query = supabase
     .from("transactions")
@@ -57,7 +59,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     .eq("estate", estate)
     .eq("property_type", propertyType)
     .eq("is_market_sale", true)
-    .gte("registration_date", cutoffDate.toISOString().split("T")[0])
+    .gte("registration_date", cutoffDateStr)
     .gte("size_m2", sizeMin)
     .lte("size_m2", sizeMax)
     .order("registration_date", { ascending: false })
