@@ -46,8 +46,8 @@ function percentile(sortedArr: number[], p: number): number {
 
 export async function getComps(params: CMAParams): Promise<CompsResult> {
   const { estate, propertyType, sectionalScheme, erfSize, builtArea, lookback, tolerance } = params;
-  const sizeMin = erfSize * (1 - tolerance);
-  const sizeMax = erfSize * (1 + tolerance);
+  const sizeMin = Math.floor(erfSize * (1 - tolerance));
+  const sizeMax = Math.ceil(erfSize * (1 + tolerance));
   const cutoffDate = new Date();
   cutoffDate.setMonth(cutoffDate.getMonth() - lookback);
 
