@@ -1,6 +1,67 @@
 "use client";
 
-export default function PDFDownloadButton({ cmaData }: { cmaData: unknown }) {
-  void cmaData;
-  return null;
+import { useState } from "react";
+import { pdf } from "@react-pdf/renderer";
+import { saveAs } from "file-saver";
+import CMADocument from "./CMADocument";
+
+interface PDFDownloadButtonProps {
+  cmaData: {
+    params: {
+      address: string;
+      estate: string;
+      propertyType: string;
+      erfSize: number;
+      builtArea?: number;
+      askingPrice?: number;
+      lookback: number;
+      tolerance: number;
+    };
+    result: {
+      comps: Array<{
+        id: string;
+        address: string;
+        size_m2: number;
+        built_area_m2?: number;
+        sale_price: number;
+        price_per_m2: number;
+        registration_date: string;
+      }>;
+      p25PricePerM2: number;
+      medianPricePerM2: number;
+      p75PricePerM2: number;
+      conservativePrice: number;
+      midMarketPrice: number;
+      strongPrice: number;
+    };
+    notes: Record<string, string>;
+    narrative: string;
+    today: string;
+  };
+}
+
+export default function PDFDownloadButton({ cmaData }: PDFDownloadButtonProps) {
+  const [loading, setLoading] = useState(false);
+
+  async function handleDownload() {
+    setLoading(true);
+    try {
+      const blob = await pdf(<CMADocument cmaData={cmaData} />).toBlob();
+      const date = new Date().toISOString().split("T")[0];
+      const filename = `${cmaData.params.address.replace(/\s+/g, "_")}_CMA_${date}.pdf`;
+      saveAs(blob, filename);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleDownload}
+      disabled={loading}
+      className="fixed bottom-6 right-6 bg-bronze text-cream font-cinzel tracking-[0.15em] text-xs px-6 py-3 rounded shadow-lg hover:bg-bronze/90 transition-colors disabled:opacity-60 z-50"
+    >
+      {loading ? "Generating…" : "Download PDF"}
+    </button>
+  );
 }
