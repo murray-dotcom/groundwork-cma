@@ -15,7 +15,7 @@ export function dedupeGarages<T extends HasDeedSizePriceDate>(transactions: T[])
   }
   const pass1: T[] = [];
   for (const group of Array.from(pass1Groups.values())) {
-    pass1.push(group.reduce((a, b) => (a.size_m2 ?? 0) >= (b.size_m2 ?? 0) ? a : b));
+    pass1.push(group.reduce((a, b) => Number(a.size_m2 ?? 0) >= Number(b.size_m2 ?? 0) ? a : b));
   }
 
   // Pass 2: group by sales_price + registration_date — handles apartment + garage
@@ -31,7 +31,7 @@ export function dedupeGarages<T extends HasDeedSizePriceDate>(transactions: T[])
   }
   const result: T[] = [];
   for (const group of Array.from(pass2Groups.values())) {
-    result.push(group.reduce((a, b) => (a.size_m2 ?? 0) >= (b.size_m2 ?? 0) ? a : b));
+    result.push(group.reduce((a, b) => Number(a.size_m2 ?? 0) >= Number(b.size_m2 ?? 0) ? a : b));
   }
   return result;
 }
