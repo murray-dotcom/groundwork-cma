@@ -37,6 +37,7 @@ interface PDFDownloadButtonProps {
     trends: Array<{
       quarter: string;
       median_price: number;
+      median_price_per_m2: number;
       count: number;
     }>;
     today: string;

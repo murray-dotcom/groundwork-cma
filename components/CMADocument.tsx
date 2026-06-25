@@ -36,6 +36,24 @@ function fmtDate(s: string) {
 function fmtMillions(n: number) {
   return `R ${(n / 1_000_000).toFixed(1)}m`;
 }
+function fmtK(n: number) {
+  return `R ${(n / 1_000).toFixed(0)}k`;
+}
+
+function toPath(pts: Array<{ x: number; y: number }>): string {
+  if (pts.length < 2) return "";
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const cp1x = prev.x + (curr.x - prev.x) / 3;
+    const cp1y = prev.y;
+    const cp2x = curr.x - (curr.x - prev.x) / 3;
+    const cp2y = curr.y;
+    d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${curr.x} ${curr.y}`;
+  }
+  return d;
+}
 
 const styles = StyleSheet.create({
   page: { backgroundColor: COLORS.cream, fontFamily: "DM Sans", fontSize: 9, padding: 0 },
@@ -67,6 +85,7 @@ const styles = StyleSheet.create({
 interface TrendPoint {
   quarter: string;
   median_price: number;
+  median_price_per_m2: number;
   count: number;
 }
 
@@ -114,102 +133,136 @@ function TrendChartPDF({ trends }: { trends: TrendPoint[] }) {
   // Chart dimensions
   const W = 480;
   const H = 120;
-  const padL = 44; // space for y-axis labels
-  const padR = 40; // space for last x-axis label
+  const padL = 44; // space for left y-axis labels
+  const padR = 44; // space for right y-axis labels + last x label
   const padT = 10;
   const padB = 28; // space for x-axis labels
 
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
 
+  // Left axis: median sale price
   const prices = data.map((d) => d.median_price);
   const minP = Math.min(...prices);
   const maxP = Math.max(...prices);
   const range = maxP - minP || 1;
 
+  // Right axis: median R/m²
+  const ppms = data.map((d) => d.median_price_per_m2).filter((v) => v > 0);
+  const minPpm = ppms.length > 0 ? Math.min(...ppms) : 0;
+  const maxPpm = ppms.length > 0 ? Math.max(...ppms) : 1;
+  const rangePpm = maxPpm - minPpm || 1;
+
   const toX = (i: number) => padL + (i / (n - 1)) * chartW;
   const toY = (p: number) => padT + chartH - ((p - minP) / range) * chartH;
+  const toY2 = (p: number) => padT + chartH - ((p - minPpm) / rangePpm) * chartH;
 
   const pointObjs = data.map((d, i) => ({ x: toX(i), y: toY(d.median_price) }));
-
-  function toPath(pts: Array<{ x: number; y: number }>): string {
-    if (pts.length < 2) return "";
-    let d = `M ${pts[0].x} ${pts[0].y}`;
-    for (let i = 1; i < pts.length; i++) {
-      const prev = pts[i - 1];
-      const curr = pts[i];
-      const cp1x = prev.x + (curr.x - prev.x) / 3;
-      const cp1y = prev.y;
-      const cp2x = curr.x - (curr.x - prev.x) / 3;
-      const cp2y = curr.y;
-      d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${curr.x} ${curr.y}`;
-    }
-    return d;
-  }
+  const pointObjsPpm = data
+    .map((d, i) => ({ x: toX(i), y: toY2(d.median_price_per_m2) }))
+    .filter((_, i) => data[i].median_price_per_m2 > 0);
 
   // Y-axis ticks: 3 levels
   const yTicks = [minP, minP + range / 2, maxP];
+  const yTicksPpm = [minPpm, minPpm + rangePpm / 2, maxPpm];
 
   // X-axis: show every other label if tight
   const showLabel = (i: number) => n <= 5 || i % 2 === 0 || i === n - 1;
 
   return (
-    <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-      {/* Grid lines */}
-      {yTicks.map((p) => {
-        const y = toY(p);
-        return (
-          <Line
+    <View>
+      <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+        {/* Grid lines */}
+        {yTicks.map((p) => {
+          const y = toY(p);
+          return (
+            <Line
+              key={p}
+              x1={padL}
+              y1={y}
+              x2={W - padR}
+              y2={y}
+              stroke={COLORS.sage}
+              strokeWidth={0.5}
+              strokeDasharray="3 3"
+            />
+          );
+        })}
+
+        {/* Left Y-axis labels (price) */}
+        {yTicks.map((p) => (
+          <Text
             key={p}
-            x1={padL}
-            y1={y}
-            x2={W - padR}
-            y2={y}
+            x={padL - 3}
+            y={toY(p) + 2.5}
+            style={{ fontSize: 6, fill: COLORS.textMid }}
+            textAnchor="end"
+          >
+            {fmtMillions(p)}
+          </Text>
+        ))}
+
+        {/* Right Y-axis labels (R/m²) */}
+        {yTicksPpm.map((p) => (
+          <Text
+            key={`ppm-${p}`}
+            x={W - padR + 3}
+            y={toY2(p) + 2.5}
+            style={{ fontSize: 6, fill: COLORS.sage }}
+            textAnchor="start"
+          >
+            {fmtK(p)}
+          </Text>
+        ))}
+
+        {/* Smooth bezier curve — median price (bronze) */}
+        <Path
+          d={toPath(pointObjs)}
+          stroke={COLORS.bronze}
+          strokeWidth={2}
+          fill="none"
+        />
+
+        {/* Smooth bezier curve — median R/m² (sage, dashed) */}
+        {pointObjsPpm.length >= 2 && (
+          <Path
+            d={toPath(pointObjsPpm)}
             stroke={COLORS.sage}
-            strokeWidth={0.5}
-            strokeDasharray="3 3"
+            strokeWidth={1.5}
+            strokeDasharray="4 2"
+            fill="none"
           />
-        );
-      })}
+        )}
 
-      {/* Y-axis labels */}
-      {yTicks.map((p) => (
-        <Text
-          key={p}
-          x={padL - 3}
-          y={toY(p) + 2.5}
-          style={{ fontSize: 6, fill: COLORS.textMid }}
-          textAnchor="end"
-        >
-          {fmtMillions(p)}
-        </Text>
-      ))}
+        {/* Price dots and x-axis labels */}
+        {pointObjs.map((pt, i) => (
+          <React.Fragment key={data[i].quarter}>
+            <Circle cx={pt.x} cy={pt.y} r={3.5} fill={COLORS.bronze} />
+            {showLabel(i) && (
+              <Text
+                x={pt.x}
+                y={H - 8}
+                style={{ fontSize: 6, fill: COLORS.textMid }}
+                textAnchor="middle"
+              >
+                {data[i].quarter}
+              </Text>
+            )}
+          </React.Fragment>
+        ))}
 
-      {/* Smooth bezier curve */}
-      <Path
-        d={toPath(pointObjs)}
-        stroke={COLORS.bronze}
-        strokeWidth={2}
-        fill="none"
-      />
+        {/* R/m² dots */}
+        {pointObjsPpm.map((pt, i) => (
+          <Circle key={`ppm-dot-${i}`} cx={pt.x} cy={pt.y} r={2.5} fill={COLORS.sage} />
+        ))}
+      </Svg>
 
-      {/* Dots and x-axis labels */}
-      {pointObjs.map((pt, i) => (
-        <React.Fragment key={data[i].quarter}>
-          <Circle cx={pt.x} cy={pt.y} r={3.5} fill={COLORS.bronze} />
-          {showLabel(i) && (
-            <Text
-              x={pt.x}
-              y={H - 8}
-              style={{ fontSize: 6, fill: COLORS.textMid }}
-              textAnchor="middle"
-            >
-              {data[i].quarter}
-            </Text>
-          )}
-        </React.Fragment>
-      ))}
-    </Svg>
+      {/* Legend */}
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 14, marginTop: 3, marginRight: padR }}>
+        <Text style={{ fontSize: 6, color: COLORS.bronze }}>— Median price</Text>
+        <Text style={{ fontSize: 6, color: COLORS.sage }}>- - Median R/m² ERF</Text>
+      </View>
+    </View>
   );
 }
 

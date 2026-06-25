@@ -3,6 +3,7 @@ import { supabase } from "./supabase";
 export interface TrendPoint {
   quarter: string;   // e.g. "Q1 2024"
   median_price: number;
+  median_price_per_m2: number;
   count: number;
 }
 
@@ -35,7 +36,7 @@ export async function getTrends(params: TrendParams): Promise<TrendPoint[]> {
 
   let query = supabase
     .from("transactions")
-    .select("registration_date, sales_price")
+    .select("registration_date, sales_price, price_per_m2")
     .in("estate", estates)
     .eq("property_type", propertyType)
     .eq("is_market_sale", true)
@@ -52,12 +53,18 @@ export async function getTrends(params: TrendParams): Promise<TrendPoint[]> {
 
   // Group by quarter client-side
   const groups = new Map<string, number[]>();
+  const groupsPpm = new Map<string, number[]>();
   for (const row of data ?? []) {
     const price = Number(row.sales_price);
     if (!price || price <= 0) continue;
     const label = quarterLabel(row.registration_date);
     if (!groups.has(label)) groups.set(label, []);
     groups.get(label)!.push(price);
+    const ppm = Number(row.price_per_m2);
+    if (ppm > 0) {
+      if (!groupsPpm.has(label)) groupsPpm.set(label, []);
+      groupsPpm.get(label)!.push(ppm);
+    }
   }
 
   // Sort quarters chronologically, filter to ≥ 2 sales
@@ -71,11 +78,15 @@ export async function getTrends(params: TrendParams): Promise<TrendPoint[]> {
       };
       return parse(a) - parse(b);
     })
-    .map(([quarter, prices]) => ({
-      quarter,
-      median_price: median([...prices].sort((a, b) => a - b)),
-      count: prices.length,
-    }));
+    .map(([quarter, prices]) => {
+      const ppmArr = [...(groupsPpm.get(quarter) ?? [])].sort((a, b) => a - b);
+      return {
+        quarter,
+        median_price: median([...prices].sort((a, b) => a - b)),
+        median_price_per_m2: median(ppmArr),
+        count: prices.length,
+      };
+    });
 
   return sorted;
 }
