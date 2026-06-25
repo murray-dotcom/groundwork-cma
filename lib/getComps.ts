@@ -48,7 +48,7 @@ function percentile(sortedArr: number[], p: number): number {
 }
 
 export async function getComps(params: CMAParams): Promise<CompsResult> {
-  const { estate, propertyType, sectionalScheme, erfSize, builtArea, lookback, tolerance } = params;
+  const { estate, propertyType, sectionalScheme, erfSize, builtArea: _builtArea, lookback, tolerance } = params;
   const sizeMin = Math.floor(erfSize * (1 - tolerance));
   const sizeMax = Math.ceil(erfSize * (1 + tolerance));
   // Equivalent to Postgres: current_date - interval '${lookback} months'
