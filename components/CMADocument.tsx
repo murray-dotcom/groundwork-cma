@@ -6,6 +6,10 @@ import {
   Text,
   Image,
   StyleSheet,
+  Svg,
+  Line,
+  Polyline,
+  Circle,
 } from "@react-pdf/renderer";
 
 const COLORS = {
@@ -28,6 +32,9 @@ function fmtPpm(n: number) {
 function fmtDate(s: string) {
   const d = new Date(s);
   return d.toLocaleDateString("en-ZA", { month: "short", year: "numeric" });
+}
+function fmtMillions(n: number) {
+  return `R ${(n / 1_000_000).toFixed(1)}m`;
 }
 
 const styles = StyleSheet.create({
@@ -57,10 +64,16 @@ const styles = StyleSheet.create({
   footerText: { fontFamily: "Cormorant Garamond", fontSize: 6.5, color: COLORS.sage, textAlign: "center", lineHeight: 1.6 },
 });
 
+interface TrendPoint {
+  quarter: string;
+  median_price: number;
+  count: number;
+}
+
 interface CMADocumentProps {
   logoSrc?: string;
   cmaData: {
-    trends?: Array<{ quarter: string; median_price: number; count: number }>;
+    trends?: TrendPoint[];
     params: {
       address: string;
       estates: string[];
@@ -91,6 +104,98 @@ interface CMADocumentProps {
     narrative: string;
     today: string;
   };
+}
+
+function TrendChartPDF({ trends }: { trends: TrendPoint[] }) {
+  const data = trends.slice(-8);
+  const n = data.length;
+  if (n < 2) return null;
+
+  // Chart dimensions
+  const W = 460;
+  const H = 120;
+  const padL = 44; // space for y-axis labels
+  const padR = 8;
+  const padT = 10;
+  const padB = 28; // space for x-axis labels
+
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+
+  const prices = data.map((d) => d.median_price);
+  const minP = Math.min(...prices);
+  const maxP = Math.max(...prices);
+  const range = maxP - minP || 1;
+
+  const toX = (i: number) => padL + (i / (n - 1)) * chartW;
+  const toY = (p: number) => padT + chartH - ((p - minP) / range) * chartH;
+
+  const points = data.map((d, i) => `${toX(i)},${toY(d.median_price)}`).join(" ");
+
+  // Y-axis ticks: 3 levels
+  const yTicks = [minP, minP + range / 2, maxP];
+
+  // X-axis: show every other label if tight
+  const showLabel = (i: number) => n <= 5 || i % 2 === 0 || i === n - 1;
+
+  return (
+    <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {/* Grid lines */}
+      {yTicks.map((p) => {
+        const y = toY(p);
+        return (
+          <Line
+            key={p}
+            x1={padL}
+            y1={y}
+            x2={W - padR}
+            y2={y}
+            stroke={COLORS.sage}
+            strokeWidth={0.5}
+            strokeDasharray="3 3"
+          />
+        );
+      })}
+
+      {/* Y-axis labels */}
+      {yTicks.map((p) => (
+        <Text
+          key={p}
+          x={padL - 3}
+          y={toY(p) + 2.5}
+          style={{ fontSize: 6, fill: COLORS.textMid }}
+          textAnchor="end"
+        >
+          {fmtMillions(p)}
+        </Text>
+      ))}
+
+      {/* Line */}
+      <Polyline
+        points={points}
+        stroke={COLORS.bronze}
+        strokeWidth={2}
+        fill="none"
+      />
+
+      {/* Dots and x-axis labels */}
+      {data.map((d, i) => (
+        <React.Fragment key={d.quarter}>
+          <Circle cx={toX(i)} cy={toY(d.median_price)} r={3.5} fill={COLORS.bronze} />
+          {showLabel(i) && (
+            <Text
+              x={toX(i)}
+              y={H - 8}
+              style={{ fontSize: 6, fill: COLORS.textMid }}
+              textAnchor="middle"
+            >
+              {d.quarter}
+            </Text>
+          )}
+        </React.Fragment>
+      ))}
+    </Svg>
+  );
 }
 
 export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
@@ -144,7 +249,7 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Negotiation Position</Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
-              <View style={{ flex: 1, backgroundColor: COLORS.cream, borderRadius: 4, padding: "10 8", alignItems: "center" }}>
+              <View style={{ flex: 1, backgroundColor: "#F5F1EA", borderRadius: 4, padding: "10 8", alignItems: "center", border: `1pt solid ${COLORS.sage}` }}>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.sage, marginBottom: 3 }}>Original Asking Price</Text>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.olive }}>{fmtRand(params.askingPrice)}</Text>
               </View>
@@ -170,7 +275,7 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
               <Text style={[styles.tableHeaderCell, { width: colWidths.note }]}>Note</Text>
             </View>
             {result.comps.map((comp, i) => (
-              <View key={comp.id} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? "#F5F1EA80" : COLORS.white }]}>
+              <View key={comp.id} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? "#F5F1EA" : COLORS.white }]}>
                 <Text style={[styles.tableCell, { width: colWidths.address }]}>
                   {comp.address}{comp.id === closestId ? " ★" : ""}
                 </Text>
@@ -185,23 +290,12 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
           </View>
         </View>
 
-        {/* Price trend chart */}
-        {trends && trends.length > 0 && (
+        {/* Price trend line chart */}
+        {trends && trends.length >= 2 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Price Trend</Text>
-            <View style={{ backgroundColor: COLORS.cream, borderRadius: 4, padding: 12, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-around", height: 120 }}>
-              {trends.slice(-8).map((trend) => {
-                const minPrice = Math.min(...trends.map((t) => t.median_price));
-                const maxPrice = Math.max(...trends.map((t) => t.median_price));
-                const range = maxPrice - minPrice || 1;
-                const barHeight = ((trend.median_price - minPrice) / range) * 80 + 10;
-                return (
-                  <View key={trend.quarter} style={{ alignItems: "center", flex: 1 }}>
-                    <View style={{ backgroundColor: COLORS.bronze, width: 12, height: barHeight, borderRadius: 2, marginBottom: 4 }} />
-                    <Text style={{ fontSize: 6, color: COLORS.textMid, textAlign: "center" }}>{trend.quarter}</Text>
-                  </View>
-                );
-              })}
+            <Text style={styles.sectionTitle}>Price Trend — {params.estates.join(" + ")}</Text>
+            <View style={{ backgroundColor: COLORS.white, borderRadius: 4, padding: "8 4" }}>
+              <TrendChartPDF trends={trends} />
             </View>
           </View>
         )}
@@ -232,8 +326,8 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
           <Text style={styles.narrative}>{narrative}</Text>
         </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
+        {/* Footer — wrap={false} prevents splitting onto a new page */}
+        <View style={styles.footer} wrap={false}>
           <Text style={styles.footerText}>
             This report is prepared for informational purposes only and does not constitute a formal valuation. Data sourced from Lightstone.
           </Text>
