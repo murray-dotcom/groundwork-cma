@@ -145,8 +145,12 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         {/* SECTION 1 — Header */}
         <div className="bg-olive text-cream rounded-t-lg px-8 py-5 flex justify-between items-start">
           <div>
-            <h1 className="font-cinzel text-2xl tracking-[0.25em]">HOME GROUND</h1>
-            <p className="font-cormorant text-cream/60 text-sm tracking-wider mt-0.5">Real Estate</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo.png"
+              alt="Home Ground Real Estate"
+              style={{ height: "52px", mixBlendMode: "multiply" }}
+            />
           </div>
           <div className="text-right">
             <p className="font-cinzel text-sm tracking-[0.15em] text-cream/90">COMPARABLE MARKET ANALYSIS</p>

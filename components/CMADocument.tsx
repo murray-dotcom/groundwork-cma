@@ -4,6 +4,7 @@ import {
   Page,
   View,
   Text,
+  Image,
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
@@ -128,8 +129,10 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text style={styles.logoText}>HOME GROUND</Text>
-            <Text style={styles.headerSub}>Real Estate</Text>
+            {/* Note: react-pdf does not support mix-blend-mode; white logo background
+                is visible against the dark olive header. Use a cream/white logo variant
+                for a fully transparent result when one is available. */}
+            <Image src="/images/logo.png" style={{ height: 40 }} />
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>COMPARABLE MARKET ANALYSIS</Text>
