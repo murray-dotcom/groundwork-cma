@@ -1,4 +1,6 @@
 import { getComps } from "@/lib/getComps";
+import { getTrends } from "@/lib/getTrends";
+import type { TrendPoint } from "@/lib/getTrends";
 import CMADisplay from "./CMADisplay";
 import Link from "next/link";
 
@@ -39,18 +41,26 @@ export default async function CMAPage({ searchParams }: PageProps) {
   };
 
   let result;
+  let trends: TrendPoint[] = [];
   let error: string | null = null;
 
   try {
-    result = await getComps({
-      estate,
-      propertyType,
-      sectionalScheme: searchParams.sectionalScheme,
-      erfSize,
-      builtArea,
-      lookback,
-      tolerance,
-    });
+    [result, trends] = await Promise.all([
+      getComps({
+        estate,
+        propertyType,
+        sectionalScheme: searchParams.sectionalScheme,
+        erfSize,
+        builtArea,
+        lookback,
+        tolerance,
+      }),
+      getTrends({
+        estate,
+        propertyType,
+        sectionalScheme: searchParams.sectionalScheme,
+      }).catch(() => [] as TrendPoint[]),
+    ]);
   } catch (e: unknown) {
     error = e instanceof Error ? e.message : "Failed to fetch comparable sales.";
   }
@@ -84,5 +94,5 @@ export default async function CMAPage({ searchParams }: PageProps) {
     );
   }
 
-  return <CMADisplay params={params} result={result} />;
+  return <CMADisplay params={params} result={result} trends={trends} />;
 }

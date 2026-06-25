@@ -200,6 +200,8 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
           </View>
         </View>
 
+        {/* Trend chart is screen-only — excluded from PDF */}
+
         {/* Price panels */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Market-Derived Price Indication</Text>

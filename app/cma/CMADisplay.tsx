@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { CompsResult, Transaction } from "@/lib/getComps";
+import type { TrendPoint } from "@/lib/getTrends";
 import dynamic from "next/dynamic";
 
 const PDFDownloadButton = dynamic(() => import("@/components/PDFDownloadButton"), { ssr: false });
+const TrendChart = dynamic(() => import("@/components/TrendChart"), { ssr: false });
 
 interface CMADisplayProps {
   params: {
@@ -19,6 +21,7 @@ interface CMADisplayProps {
     tolerance: number;
   };
   result: CompsResult;
+  trends: TrendPoint[];
 }
 
 function formatRand(n: number) {
@@ -67,7 +70,7 @@ function derivePrices(comps: Transaction[]) {
   };
 }
 
-export default function CMADisplay({ params, result }: CMADisplayProps) {
+export default function CMADisplay({ params, result, trends }: CMADisplayProps) {
   const router = useRouter();
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [narrative, setNarrative] = useState<string>("");
@@ -258,6 +261,14 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* SECTION 4b — Price trend chart (screen only) */}
+        <div className="bg-white border border-sage/20 rounded-lg p-6">
+          <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">
+            Price Trend — {params.estate}
+          </h2>
+          <TrendChart data={trends} estate={params.estate} />
         </div>
 
         {/* SECTION 5 — Price indication panels */}
