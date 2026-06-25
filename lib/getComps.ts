@@ -84,24 +84,37 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     sales_price: Number(row.sales_price),
     price_per_m2: Number(row.price_per_m2),
   }));
-  const prices = comps
+
+  // Price indications: percentiles of actual comp sale prices.
+  // ERF-based price_per_m2 from Lightstone is not suitable for
+  // built-area multiplication, so we derive values directly from
+  // the distribution of comparable sale prices.
+  const salePrices = comps
+    .map((c) => c.sales_price)
+    .filter((p) => p > 0)
+    .sort((a, b) => a - b);
+
+  const conservativePrice = percentile(salePrices, 25);
+  const midMarketPrice = percentile(salePrices, 50);
+  const strongPrice = percentile(salePrices, 75);
+
+  // ERF-based R/m² kept for reference labels on the panels only.
+  const erfPricesPerM2 = comps
     .map((c) => c.price_per_m2)
     .filter((p) => p > 0)
     .sort((a, b) => a - b);
 
-  const p25 = percentile(prices, 25);
-  const median = percentile(prices, 50);
-  const p75 = percentile(prices, 75);
-
-  const refArea = builtArea ?? erfSize;
+  const p25PricePerM2 = percentile(erfPricesPerM2, 25);
+  const medianPricePerM2 = percentile(erfPricesPerM2, 50);
+  const p75PricePerM2 = percentile(erfPricesPerM2, 75);
 
   return {
     comps,
-    p25PricePerM2: p25,
-    medianPricePerM2: median,
-    p75PricePerM2: p75,
-    conservativePrice: refArea * p25,
-    midMarketPrice: refArea * median,
-    strongPrice: refArea * p75,
+    p25PricePerM2,
+    medianPricePerM2,
+    p75PricePerM2,
+    conservativePrice,
+    midMarketPrice,
+    strongPrice,
   };
 }

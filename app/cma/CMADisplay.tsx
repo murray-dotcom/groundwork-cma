@@ -207,7 +207,7 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
               <div key={label} className={`${bg} rounded-lg p-6 text-center`}>
                 <p className="font-cormorant text-xs uppercase tracking-widest text-cream/70 mb-2">{label}</p>
                 <p className="font-cinzel text-xl text-cream leading-tight">{formatRand(price)}</p>
-                <p className="font-dm-sans text-cream/60 text-xs mt-2">{formatRandPerM2(ppm)}</p>
+                <p className="font-dm-sans text-cream/60 text-xs mt-2">@ {formatRandPerM2(ppm)} ERF</p>
               </div>
             ))}
           </div>

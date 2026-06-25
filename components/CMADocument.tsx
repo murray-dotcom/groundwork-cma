@@ -212,7 +212,7 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
               <View key={label} style={[styles.pricePanel, { backgroundColor: bg }]}>
                 <Text style={styles.pricePanelLabel}>{label}</Text>
                 <Text style={styles.pricePanelValue}>{fmtRand(price)}</Text>
-                <Text style={styles.pricePanelSub}>{fmtPpm(ppm)}</Text>
+                <Text style={styles.pricePanelSub}>@ {fmtPpm(ppm)} ERF</Text>
               </View>
             ))}
           </View>
