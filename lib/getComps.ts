@@ -21,7 +21,7 @@ export interface Transaction {
   sectional_scheme?: string;
   size_m2: number;
   built_area_m2?: number;
-  sale_price: number;
+  sales_price: number;
   price_per_m2: number;
   registration_date: string;
   is_market_sale: boolean;
@@ -81,7 +81,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
       [row.street_number, row.street].filter(Boolean).join(" ").trim() ||
       row.title_deed_no ||
       "",
-    sale_price: Number(row.sale_price),
+    sales_price: Number(row.sales_price),
     price_per_m2: Number(row.price_per_m2),
   }));
   const prices = comps

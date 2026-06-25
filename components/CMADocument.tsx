@@ -91,7 +91,7 @@ interface CMADocumentProps {
         address: string;
         size_m2: number;
         built_area_m2?: number;
-        sale_price: number;
+        sales_price: number;
         price_per_m2: number;
         registration_date: string;
       }>;
@@ -192,7 +192,7 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
                 <Text style={[styles.tableCell, { width: colWidths.date }]}>{fmtDate(comp.registration_date)}</Text>
                 <Text style={[styles.tableCell, { width: colWidths.erf }]}>{comp.size_m2}</Text>
                 <Text style={[styles.tableCell, { width: colWidths.built }]}>{comp.built_area_m2 ?? "—"}</Text>
-                <Text style={[styles.tableCell, { width: colWidths.price, fontWeight: 600 }]}>{fmtRand(comp.sale_price)}</Text>
+                <Text style={[styles.tableCell, { width: colWidths.price, fontWeight: 600 }]}>{fmtRand(comp.sales_price)}</Text>
                 <Text style={[styles.tableCell, { width: colWidths.ppm }]}>{fmtPpm(comp.price_per_m2)}</Text>
                 <Text style={[styles.tableCell, { width: colWidths.note, color: COLORS.textMid }]}>{notes[comp.id] ?? ""}</Text>
               </View>

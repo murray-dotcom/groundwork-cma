@@ -23,7 +23,7 @@ interface PDFDownloadButtonProps {
         address: string;
         size_m2: number;
         built_area_m2?: number;
-        sale_price: number;
+        sales_price: number;
         price_per_m2: number;
         registration_date: string;
       }>;
