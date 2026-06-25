@@ -45,13 +45,52 @@ function closestComp(comps: Transaction[], erfSize: number): string {
   return closest.id;
 }
 
+function pricePercentile(sortedArr: number[], p: number): number {
+  if (sortedArr.length === 0) return 0;
+  const idx = (p / 100) * (sortedArr.length - 1);
+  const lower = Math.floor(idx);
+  const upper = Math.ceil(idx);
+  if (lower === upper) return sortedArr[lower];
+  return sortedArr[lower] + (sortedArr[upper] - sortedArr[lower]) * (idx - lower);
+}
+
+function derivePrices(comps: Transaction[]) {
+  const salePrices = comps.map((c) => c.sales_price).filter((p) => p > 0).sort((a, b) => a - b);
+  const erfPpm = comps.map((c) => c.price_per_m2).filter((p) => p > 0).sort((a, b) => a - b);
+  return {
+    conservativePrice: pricePercentile(salePrices, 25),
+    midMarketPrice: pricePercentile(salePrices, 50),
+    strongPrice: pricePercentile(salePrices, 75),
+    p25PricePerM2: pricePercentile(erfPpm, 25),
+    medianPricePerM2: pricePercentile(erfPpm, 50),
+    p75PricePerM2: pricePercentile(erfPpm, 75),
+  };
+}
+
 export default function CMADisplay({ params, result }: CMADisplayProps) {
   const router = useRouter();
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [narrative, setNarrative] = useState<string>("");
   const [narrativeLoading, setNarrativeLoading] = useState(true);
+  const [excludeOutliers, setExcludeOutliers] = useState(false);
   const today = new Date().toLocaleDateString("en-ZA", { day: "2-digit", month: "long", year: "numeric" });
-  const closestId = closestComp(result.comps, params.erfSize);
+
+  const { lower, upper } = result.outlierBounds;
+  const filteredComps = excludeOutliers
+    ? result.comps.filter((c) => c.sales_price >= lower && c.sales_price <= upper)
+    : result.comps;
+  const outlierCount = result.comps.length - filteredComps.length;
+
+  const prices = excludeOutliers ? derivePrices(filteredComps) : {
+    conservativePrice: result.conservativePrice,
+    midMarketPrice: result.midMarketPrice,
+    strongPrice: result.strongPrice,
+    p25PricePerM2: result.p25PricePerM2,
+    medianPricePerM2: result.medianPricePerM2,
+    p75PricePerM2: result.p75PricePerM2,
+  };
+
+  const closestId = closestComp(filteredComps, params.erfSize);
 
   useEffect(() => {
     fetch("/api/narrative", {
@@ -60,11 +99,11 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
       body: JSON.stringify({
         address: params.address,
         estate: params.estate,
-        compsCount: result.comps.length,
-        conservativePrice: result.conservativePrice,
-        midMarketPrice: result.midMarketPrice,
-        strongPrice: result.strongPrice,
-        medianPricePerM2: result.medianPricePerM2,
+        compsCount: filteredComps.length,
+        conservativePrice: prices.conservativePrice,
+        midMarketPrice: prices.midMarketPrice,
+        strongPrice: prices.strongPrice,
+        medianPricePerM2: prices.medianPricePerM2,
         askingPrice: params.askingPrice,
       }),
     })
@@ -76,7 +115,11 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
 
   const cmaData = {
     params,
-    result,
+    result: {
+      ...result,
+      comps: filteredComps,
+      ...prices,
+    },
     notes,
     narrative,
     today,
@@ -88,9 +131,9 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
   return (
     <main className="min-h-screen bg-off-white py-8 px-4">
         {/* Low comps warning */}
-        {result.comps.length < 3 && (
+        {filteredComps.length < 3 && (
           <div className="max-w-5xl mx-auto mb-2 bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-yellow-800 font-cormorant text-sm">
-            Only {result.comps.length} comparable sale{result.comps.length === 1 ? "" : "s"} found — results may be indicative only.
+            Only {filteredComps.length} comparable sale{filteredComps.length === 1 ? "" : "s"} found — results may be indicative only.
           </div>
         )}
       <div className="max-w-5xl mx-auto space-y-6" id="cma-report">
@@ -138,23 +181,45 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
               </div>
               <div className="bg-olive rounded p-4 text-center">
                 <p className="font-cormorant text-xs uppercase tracking-widest text-cream/70 mb-1">Market Mid-Point</p>
-                <p className="font-cinzel text-2xl text-cream">{formatRand(result.midMarketPrice)}</p>
+                <p className="font-cinzel text-2xl text-cream">{formatRand(prices.midMarketPrice)}</p>
               </div>
             </div>
             <p className="font-cormorant text-sm text-gray-600 italic">
-              {params.askingPrice > result.midMarketPrice
-                ? `The asking price of ${formatRand(params.askingPrice)} sits ${formatRand(params.askingPrice - result.midMarketPrice)} above the market mid-point, leaving room for negotiation toward the ${formatRand(result.midMarketPrice)}–${formatRand(result.strongPrice)} range.`
-                : params.askingPrice < result.midMarketPrice
-                ? `The asking price of ${formatRand(params.askingPrice)} is ${formatRand(result.midMarketPrice - params.askingPrice)} below the market mid-point of ${formatRand(result.midMarketPrice)}, suggesting competitive positioning.`
-                : `The asking price is aligned with the market mid-point of ${formatRand(result.midMarketPrice)}.`}
+              {params.askingPrice > prices.midMarketPrice
+                ? `The asking price of ${formatRand(params.askingPrice)} sits ${formatRand(params.askingPrice - prices.midMarketPrice)} above the market mid-point, leaving room for negotiation toward the ${formatRand(prices.midMarketPrice)}–${formatRand(prices.strongPrice)} range.`
+                : params.askingPrice < prices.midMarketPrice
+                ? `The asking price of ${formatRand(params.askingPrice)} is ${formatRand(prices.midMarketPrice - params.askingPrice)} below the market mid-point of ${formatRand(prices.midMarketPrice)}, suggesting competitive positioning.`
+                : `The asking price is aligned with the market mid-point of ${formatRand(prices.midMarketPrice)}.`}
             </p>
           </div>
         )}
 
         {/* SECTION 4 — Comparable sales table */}
         <div className="bg-white border border-sage/20 rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-sage/20">
+          <div className="px-6 py-4 border-b border-sage/20 flex items-center justify-between">
             <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase">Comparable Sales</h2>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <span className="font-cormorant text-xs text-sage">Exclude outliers</span>
+              <button
+                role="switch"
+                aria-checked={excludeOutliers}
+                onClick={() => setExcludeOutliers((v) => !v)}
+                className={`relative inline-flex h-5 w-9 rounded-full transition-colors focus:outline-none ${
+                  excludeOutliers ? "bg-sage" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform mt-0.5 ${
+                    excludeOutliers ? "translate-x-4" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+              {excludeOutliers && outlierCount > 0 && (
+                <span className="font-dm-sans text-xs text-sage/80">
+                  {outlierCount} outlier{outlierCount === 1 ? "" : "s"} excluded
+                </span>
+              )}
+            </label>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -168,7 +233,7 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
                 </tr>
               </thead>
               <tbody>
-                {result.comps.map((comp, i) => (
+                {filteredComps.map((comp, i) => (
                   <tr key={comp.id} className={i % 2 === 0 ? "bg-cream/40" : "bg-white"}>
                     <td className="px-4 py-3 font-dm-sans text-gray-800">
                       {comp.address}
@@ -200,9 +265,9 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
           <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-3">Market-Derived Price Indication</h2>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: "Conservative", price: result.conservativePrice, ppm: result.p25PricePerM2, bg: "bg-sage" },
-              { label: "Mid-Market", price: result.midMarketPrice, ppm: result.medianPricePerM2, bg: "bg-olive" },
-              { label: "Strong Market", price: result.strongPrice, ppm: result.p75PricePerM2, bg: "bg-bronze" },
+              { label: "Conservative", price: prices.conservativePrice, ppm: prices.p25PricePerM2, bg: "bg-sage" },
+              { label: "Mid-Market", price: prices.midMarketPrice, ppm: prices.medianPricePerM2, bg: "bg-olive" },
+              { label: "Strong Market", price: prices.strongPrice, ppm: prices.p75PricePerM2, bg: "bg-bronze" },
             ].map(({ label, price, ppm, bg }) => (
               <div key={label} className={`${bg} rounded-lg p-6 text-center`}>
                 <p className="font-cormorant text-xs uppercase tracking-widest text-cream/70 mb-2">{label}</p>
@@ -216,7 +281,7 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
         {/* SECTION 6 — Recommended range + narrative */}
         <div className="bg-white border border-sage/20 rounded-lg p-6">
           <p className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-3">
-            RECOMMENDED NEGOTIATED RANGE: {formatRand(result.conservativePrice)} – {formatRand(result.strongPrice)}
+            RECOMMENDED NEGOTIATED RANGE: {formatRand(prices.conservativePrice)} – {formatRand(prices.strongPrice)}
           </p>
           {narrativeLoading ? (
             <div className="h-10 bg-sage/10 rounded animate-pulse" />

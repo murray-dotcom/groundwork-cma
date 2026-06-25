@@ -28,6 +28,11 @@ export interface Transaction {
   note?: string;
 }
 
+export interface OutlierBounds {
+  lower: number;
+  upper: number;
+}
+
 export interface CompsResult {
   comps: Transaction[];
   p25PricePerM2: number;
@@ -36,6 +41,16 @@ export interface CompsResult {
   conservativePrice: number;
   midMarketPrice: number;
   strongPrice: number;
+  outlierBounds: OutlierBounds;
+}
+
+function calculateOutlierBounds(salePrices: number[]): OutlierBounds {
+  if (salePrices.length < 2) return { lower: 0, upper: Infinity };
+  const sorted = [...salePrices].sort((a, b) => a - b);
+  const q1 = percentile(sorted, 25);
+  const q3 = percentile(sorted, 75);
+  const iqr = q3 - q1;
+  return { lower: q1 - 1.5 * iqr, upper: q3 + 1.5 * iqr };
 }
 
 function percentile(sortedArr: number[], p: number): number {
@@ -108,6 +123,8 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   const medianPricePerM2 = percentile(erfPricesPerM2, 50);
   const p75PricePerM2 = percentile(erfPricesPerM2, 75);
 
+  const outlierBounds = calculateOutlierBounds(salePrices);
+
   return {
     comps,
     p25PricePerM2,
@@ -116,5 +133,6 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     conservativePrice,
     midMarketPrice,
     strongPrice,
+    outlierBounds,
   };
 }
