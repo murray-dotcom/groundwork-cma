@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   pricePanelLabel: { fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.cream, opacity: 0.7, marginBottom: 4 },
   pricePanelValue: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.cream },
   pricePanelSub: { fontSize: 7, color: COLORS.cream, opacity: 0.6, marginTop: 3 },
-  narrative: { fontFamily: "Cormorant Garamond", fontSize: 9, color: COLORS.textMid, fontStyle: "italic", lineHeight: 1.5 },
+  narrative: { fontFamily: "Cormorant Garamond", fontSize: 9, color: COLORS.textMid, fontStyle: "normal", lineHeight: 1.5 },
   footer: { margin: "4 16 12", borderTop: `0.5pt solid ${COLORS.sage}`, paddingTop: 6, alignItems: "center" },
   footerText: { fontFamily: "Cormorant Garamond", fontSize: 6.5, color: COLORS.sage, textAlign: "center", lineHeight: 1.6 },
 });

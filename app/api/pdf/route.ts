@@ -5,25 +5,18 @@ import CMADocument from "@/components/CMADocument";
 import fs from "fs";
 import path from "path";
 
-Font.register({
-  family: "Cinzel",
-  fonts: [
-    {
-      src: "https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2",
-      fontWeight: 400,
-    },
-  ],
-});
+const fontsDir = path.join(process.cwd(), "public", "fonts");
+
 Font.register({
   family: "Cormorant Garamond",
   fonts: [
     {
-      src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3YmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2",
+      src: path.join(fontsDir, "CormorantGaramond-Regular.ttf"),
       fontWeight: 400,
       fontStyle: "normal",
     },
     {
-      src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3WmX5slCNuHLi8bLeY9MK7whWMhyjornFLsS6V7wx_.woff2",
+      src: path.join(fontsDir, "CormorantGaramond-Italic.ttf"),
       fontWeight: 400,
       fontStyle: "italic",
     },
@@ -31,7 +24,11 @@ Font.register({
 });
 Font.register({
   family: "DM Sans",
-  src: "https://fonts.gstatic.com/s/dmsans/v15/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAkJxhTmf3ZGMZpg.woff2",
+  src: path.join(fontsDir, "DMSans-Regular.ttf"),
+});
+Font.register({
+  family: "Cinzel",
+  src: path.join(fontsDir, "Cinzel-Regular.ttf"),
 });
 Font.registerHyphenationCallback((word) => [word]);
 
