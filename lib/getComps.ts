@@ -84,7 +84,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     .limit(12);
 
   if (propertyType === "sectional_title" && sectionalScheme) {
-    query = query.eq("sectional_scheme", sectionalScheme);
+    query = query.ilike("sectional_scheme", `%${sectionalScheme}%`);
   }
 
   const { data, error } = await query;
