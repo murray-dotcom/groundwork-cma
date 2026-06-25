@@ -198,7 +198,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
             <img
               src="/images/logo_2.png"
               alt="Home Ground Real Estate"
-              style={{ height: "52px" }}
+              style={{ height: "78px" }}
             />
           </div>
           <div className="text-right">

@@ -130,7 +130,7 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             {/* eslint-disable-next-line jsx-a11y/alt-text */}
-            <Image src="/images/logo_2.png" style={{ height: 40 }} />
+            <Image src="/images/logo_2.png" style={{ height: 60 }} />
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>COMPARABLE MARKET ANALYSIS</Text>
