@@ -3,7 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const ESTATES = ["Simbithi Eco Estate", "Dunkirk Estate"];
+const ESTATES = [
+  "Simbithi Eco Estate",
+  "Dunkirk Estate",
+  "Ballito",
+  "Black Rock",
+  "Brettenwood Coastal Estate",
+  "Compensation Beach",
+  "Salt Rock",
+  "Shakas Rock",
+  "Thompsons Bay",
+  "Umhlali Beach",
+  "Willard Beach",
+];
 const LOOKBACK_OPTIONS = [
   { label: "12 months", value: "12" },
   { label: "24 months", value: "24" },
