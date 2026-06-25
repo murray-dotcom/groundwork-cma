@@ -314,7 +314,9 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-olive text-cream">
-                  {["Address", "Sale Date", "ERF m²", "Built m²", "Sale Price", "R/m²", "Note", ""].map((h, i) => (
+                  {["Address", "Sale Date", "ERF m²", "Built m²", "Sale Price",
+                    filteredComps.some((c) => c.built_area_m2) ? "R/m² ERF | BUILT" : "R/m²",
+                    "Note", ""].map((h, i) => (
                     <th key={i} className="font-cormorant text-xs tracking-wider uppercase px-4 py-3 text-left font-medium">
                       {h}
                     </th>
@@ -334,7 +336,14 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
                       <td className="px-4 py-3 font-dm-sans text-gray-600">{comp.size_m2}</td>
                       <td className="px-4 py-3 font-dm-sans text-gray-600">{comp.built_area_m2 ?? "—"}</td>
                       <td className="px-4 py-3 font-dm-sans text-gray-800 font-medium">{formatRand(Number(comp.sales_price))}</td>
-                      <td className="px-4 py-3 font-dm-sans text-gray-600">{formatRandPerM2(Number(comp.price_per_m2))}</td>
+                      <td className="px-4 py-3 font-dm-sans">
+                        <span className="text-gray-400 text-xs">{formatRandPerM2(Number(comp.price_per_m2))} ERF</span>
+                        {comp.built_area_m2 && comp.built_area_m2 > 0 && (
+                          <span className="block font-medium" style={{ color: "#B47A05" }}>
+                            {formatRandPerM2(Math.round(comp.sales_price / comp.built_area_m2))} built
+                          </span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         <input
                           type="text"
