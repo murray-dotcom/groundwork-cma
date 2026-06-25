@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Svg,
   Line,
-  Polyline,
+  Path,
   Circle,
 } from "@react-pdf/renderer";
 
@@ -112,10 +112,10 @@ function TrendChartPDF({ trends }: { trends: TrendPoint[] }) {
   if (n < 2) return null;
 
   // Chart dimensions
-  const W = 460;
+  const W = 480;
   const H = 120;
   const padL = 44; // space for y-axis labels
-  const padR = 8;
+  const padR = 40; // space for last x-axis label
   const padT = 10;
   const padB = 28; // space for x-axis labels
 
@@ -130,7 +130,22 @@ function TrendChartPDF({ trends }: { trends: TrendPoint[] }) {
   const toX = (i: number) => padL + (i / (n - 1)) * chartW;
   const toY = (p: number) => padT + chartH - ((p - minP) / range) * chartH;
 
-  const points = data.map((d, i) => `${toX(i)},${toY(d.median_price)}`).join(" ");
+  const pointObjs = data.map((d, i) => ({ x: toX(i), y: toY(d.median_price) }));
+
+  function toPath(pts: Array<{ x: number; y: number }>): string {
+    if (pts.length < 2) return "";
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1];
+      const curr = pts[i];
+      const cp1x = prev.x + (curr.x - prev.x) / 3;
+      const cp1y = prev.y;
+      const cp2x = curr.x - (curr.x - prev.x) / 3;
+      const cp2y = curr.y;
+      d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${curr.x} ${curr.y}`;
+    }
+    return d;
+  }
 
   // Y-axis ticks: 3 levels
   const yTicks = [minP, minP + range / 2, maxP];
@@ -170,26 +185,26 @@ function TrendChartPDF({ trends }: { trends: TrendPoint[] }) {
         </Text>
       ))}
 
-      {/* Line */}
-      <Polyline
-        points={points}
+      {/* Smooth bezier curve */}
+      <Path
+        d={toPath(pointObjs)}
         stroke={COLORS.bronze}
         strokeWidth={2}
         fill="none"
       />
 
       {/* Dots and x-axis labels */}
-      {data.map((d, i) => (
-        <React.Fragment key={d.quarter}>
-          <Circle cx={toX(i)} cy={toY(d.median_price)} r={3.5} fill={COLORS.bronze} />
+      {pointObjs.map((pt, i) => (
+        <React.Fragment key={data[i].quarter}>
+          <Circle cx={pt.x} cy={pt.y} r={3.5} fill={COLORS.bronze} />
           {showLabel(i) && (
             <Text
-              x={toX(i)}
+              x={pt.x}
               y={H - 8}
               style={{ fontSize: 6, fill: COLORS.textMid }}
               textAnchor="middle"
             >
-              {d.quarter}
+              {data[i].quarter}
             </Text>
           )}
         </React.Fragment>
@@ -249,7 +264,7 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Negotiation Position</Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
-              <View style={{ flex: 1, backgroundColor: "#F5F1EA", borderRadius: 4, padding: "10 8", alignItems: "center", border: `1pt solid ${COLORS.sage}` }}>
+              <View style={{ flex: 1, backgroundColor: "#F5F1EA", borderRadius: 6, padding: 20, alignItems: "center", justifyContent: "center", marginRight: 8 }}>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.sage, marginBottom: 3 }}>Original Asking Price</Text>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.olive }}>{fmtRand(params.askingPrice)}</Text>
               </View>
