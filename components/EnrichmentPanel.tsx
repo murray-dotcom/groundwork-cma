@@ -75,7 +75,7 @@ export default function EnrichmentPanel({ titleDeedNo, estate, initial, onSaved,
     if (viewRating > 0) payload.view_rating = viewRating;
     if (dwellingType) payload.property_detail_type = dwellingType.toLowerCase();
     if (conditionRating > 0) payload.condition_rating = conditionRating;
-    if (notes) payload.enrichment_notes = notes;
+    if (notes) payload.notes = notes;
 
     const { error: err } = await supabase
       .from("property_attributes")

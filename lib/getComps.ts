@@ -170,7 +170,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
         if (e.view_rating != null) comp.view_rating = Number(e.view_rating);
         if (e.property_detail_type != null) comp.dwelling_type = String(e.property_detail_type);
         if (e.condition_rating != null) comp.condition_rating = Number(e.condition_rating);
-        if (e.enrichment_notes != null) comp.enrichment_notes = String(e.enrichment_notes);
+        if (e.notes != null) comp.enrichment_notes = String(e.notes);
       }
     }
   }
