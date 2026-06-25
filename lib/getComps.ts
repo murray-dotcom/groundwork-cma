@@ -150,7 +150,21 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     };
   });
 
+  const dashGroup = comps.filter(c => c.title_deed_no === 'ST70189/2025');
+  console.log('BEFORE DEDUP ST70189/2025:', JSON.stringify(dashGroup.map(c => ({
+    unit: c.unit,
+    size_m2: c.size_m2,
+    size_type: typeof c.size_m2,
+    price: c.sales_price,
+    deed: c.title_deed_no
+  })), null, 2));
+
   const dedupedComps = dedupeGarages(comps) as Transaction[];
+
+  const dashAfter = dedupedComps.filter(c => c.title_deed_no === 'ST70189/2025');
+  console.log('AFTER DEDUP ST70189/2025:', JSON.stringify(dashAfter.map(c => ({
+    unit: c.unit, size_m2: c.size_m2
+  })), null, 2));
 
   // Fetch enrichment data for all returned comps
   const titleDeedNos = dedupedComps.map((c) => c.title_deed_no).filter(Boolean) as string[];
