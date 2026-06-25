@@ -13,6 +13,9 @@ export interface CMAParams {
 export interface Transaction {
   id: string;
   address: string;
+  street_number?: string;
+  street?: string;
+  title_deed_no?: string;
   estate: string;
   property_type: string;
   sectional_scheme?: string;
@@ -72,7 +75,15 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   const { data, error } = await query;
   if (error) throw new Error(error.message);
 
-  const comps: Transaction[] = data ?? [];
+  const comps: Transaction[] = (data ?? []).map((row) => ({
+    ...row,
+    address:
+      [row.street_number, row.street].filter(Boolean).join(" ").trim() ||
+      row.title_deed_no ||
+      "",
+    sale_price: Number(row.sale_price),
+    price_per_m2: Number(row.price_per_m2),
+  }));
   const prices = comps
     .map((c) => c.price_per_m2)
     .filter((p) => p > 0)

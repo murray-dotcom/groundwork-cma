@@ -177,8 +177,8 @@ export default function CMADisplay({ params, result }: CMADisplayProps) {
                     <td className="px-4 py-3 font-dm-sans text-gray-600">{formatDate(comp.registration_date)}</td>
                     <td className="px-4 py-3 font-dm-sans text-gray-600">{comp.size_m2}</td>
                     <td className="px-4 py-3 font-dm-sans text-gray-600">{comp.built_area_m2 ?? "—"}</td>
-                    <td className="px-4 py-3 font-dm-sans text-gray-800 font-medium">{formatRand(comp.sale_price)}</td>
-                    <td className="px-4 py-3 font-dm-sans text-gray-600">{formatRandPerM2(comp.price_per_m2)}</td>
+                    <td className="px-4 py-3 font-dm-sans text-gray-800 font-medium">{formatRand(Number(comp.sale_price))}</td>
+                    <td className="px-4 py-3 font-dm-sans text-gray-600">{formatRandPerM2(Number(comp.price_per_m2))}</td>
                     <td className="px-4 py-3">
                       <input
                         type="text"
