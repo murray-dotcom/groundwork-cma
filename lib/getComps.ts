@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { dedupeGarages } from "./dedupeGarages";
 
 export interface CMAParams {
   estates: string[];
@@ -149,23 +150,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     };
   });
 
-  // Deduplicate: when multiple comps share same title_deed_no + registration_date,
-  // keep only the largest (dwelling), discard smaller ones (garages/parking bays).
-  const compsByDeedAndDate = new Map<string, Transaction[]>();
-  for (const comp of comps) {
-    const key = `${comp.title_deed_no}|${comp.registration_date}`;
-    if (!compsByDeedAndDate.has(key)) compsByDeedAndDate.set(key, []);
-    compsByDeedAndDate.get(key)!.push(comp);
-  }
-  const dedupedComps: Transaction[] = [];
-  for (const group of Array.from(compsByDeedAndDate.values())) {
-    if (group.length === 1) {
-      dedupedComps.push(group[0]);
-    } else {
-      const largest = group.reduce((max: Transaction, c: Transaction) => (c.size_m2 > max.size_m2 ? c : max));
-      dedupedComps.push(largest);
-    }
-  }
+  const dedupedComps = dedupeGarages(comps) as Transaction[];
 
   // Fetch enrichment data for all returned comps
   const titleDeedNos = dedupedComps.map((c) => c.title_deed_no).filter(Boolean) as string[];

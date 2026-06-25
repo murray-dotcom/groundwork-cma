@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { dedupeGarages } from "./dedupeGarages";
 
 export interface TrendPoint {
   quarter: string;   // e.g. "Q1 2024"
@@ -51,10 +52,12 @@ export async function getTrends(params: TrendParams): Promise<TrendPoint[]> {
   const { data, error } = await query;
   if (error) throw new Error(error.message);
 
+  const deduped = dedupeGarages(data ?? []);
+
   // Group by quarter client-side
   const groups = new Map<string, number[]>();
   const groupsPpm = new Map<string, number[]>();
-  for (const row of data ?? []) {
+  for (const row of deduped) {
     const price = Number(row.sales_price);
     if (!price || price <= 0) continue;
     const label = quarterLabel(row.registration_date);
