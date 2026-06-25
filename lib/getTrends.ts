@@ -37,7 +37,7 @@ export async function getTrends(params: TrendParams): Promise<TrendPoint[]> {
 
   let query = supabase
     .from("transactions")
-    .select("registration_date, sales_price, price_per_m2")
+    .select("title_deed_no, registration_date, sales_price, price_per_m2, size_m2")
     .in("estate", estates)
     .eq("property_type", propertyType)
     .eq("is_market_sale", true)
@@ -70,9 +70,9 @@ export async function getTrends(params: TrendParams): Promise<TrendPoint[]> {
     }
   }
 
-  // Sort quarters chronologically, filter to ≥ 2 sales
+  // Sort quarters chronologically, include all quarters with ≥ 1 sale
   const sorted = Array.from(groups.entries())
-    .filter(([, prices]) => prices.length >= 2)
+    .filter(([, prices]) => prices.length >= 1)
     .sort(([a], [b]) => {
       // Parse "Q1 2024" -> sortable number
       const parse = (s: string) => {

@@ -49,21 +49,40 @@ function CustomTooltip({ active, payload, label }: {
       {ppmEntry && (
         <p style={{ color: "#87825E" }}>R/m² ERF {fmtTooltipPrice(ppmEntry.value)}</p>
       )}
-      <p className="text-sage/60 mt-0.5">{count} sale{count === 1 ? "" : "s"}</p>
+      <p className="text-sage/60 mt-0.5">
+        {count} sale{count === 1 ? "" : "s"}
+        {count === 1 && <span className="ml-1 italic">(indicative)</span>}
+      </p>
     </div>
   );
 }
 
-function CustomDotBronze(props: { cx?: number; cy?: number }) {
-  const { cx, cy } = props;
+function CustomDotBronze(props: { cx?: number; cy?: number; payload?: TrendPoint }) {
+  const { cx, cy, payload } = props;
   if (cx == null || cy == null) return null;
-  return <circle cx={cx} cy={cy} r={4} fill="#B47A05" stroke="#fff" strokeWidth={1.5} />;
+  const single = payload?.count === 1;
+  return (
+    <circle
+      cx={cx} cy={cy} r={4}
+      fill={single ? "#fff" : "#B47A05"}
+      stroke="#B47A05"
+      strokeWidth={1.5}
+    />
+  );
 }
 
-function CustomDotSage(props: { cx?: number; cy?: number }) {
-  const { cx, cy } = props;
+function CustomDotSage(props: { cx?: number; cy?: number; payload?: TrendPoint }) {
+  const { cx, cy, payload } = props;
   if (cx == null || cy == null) return null;
-  return <circle cx={cx} cy={cy} r={3} fill="#87825E" stroke="#fff" strokeWidth={1.5} />;
+  const single = payload?.count === 1;
+  return (
+    <circle
+      cx={cx} cy={cy} r={3}
+      fill={single ? "#fff" : "#87825E"}
+      stroke="#87825E"
+      strokeWidth={1.5}
+    />
+  );
 }
 
 export default function TrendChart({ data, estate }: TrendChartProps) {
