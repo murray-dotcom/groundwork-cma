@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { pdf } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
-import CMADocument from "./CMADocument";
+import { useState, useEffect } from "react";
 
 interface PDFDownloadButtonProps {
   cmaData: {
@@ -43,10 +40,20 @@ interface PDFDownloadButtonProps {
 
 export default function PDFDownloadButton({ cmaData }: PDFDownloadButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => { setIsClient(true); }, []);
+
+  if (!isClient) return null;
 
   async function handleDownload() {
     setLoading(true);
     try {
+      const [{ pdf }, { default: CMADocument }, { saveAs }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("./CMADocument"),
+        import("file-saver"),
+      ]);
       const blob = await pdf(<CMADocument cmaData={cmaData} />).toBlob();
       const date = new Date().toISOString().split("T")[0];
       const filename = `${cmaData.params.address.replace(/\s+/g, "_")}_CMA_${date}.pdf`;
@@ -62,7 +69,7 @@ export default function PDFDownloadButton({ cmaData }: PDFDownloadButtonProps) {
       disabled={loading}
       className="fixed bottom-6 right-6 bg-bronze text-cream font-cinzel tracking-[0.15em] text-xs px-6 py-3 rounded shadow-lg hover:bg-bronze/90 transition-colors disabled:opacity-60 z-50"
     >
-      {loading ? "Generating…" : "Download PDF"}
+      {loading ? "Generating PDF…" : "Download PDF"}
     </button>
   );
 }
