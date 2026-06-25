@@ -11,12 +11,6 @@ Font.register({
     {
       src: "https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2",
       fontWeight: 400,
-      fontStyle: "normal",
-    },
-    {
-      src: "https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2",
-      fontWeight: 700,
-      fontStyle: "normal",
     },
   ],
 });
@@ -33,32 +27,11 @@ Font.register({
       fontWeight: 400,
       fontStyle: "italic",
     },
-    {
-      src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3YmX5slCNuHLi8bLeY9MK7whWMhyjYrHpK.woff2",
-      fontWeight: 700,
-      fontStyle: "normal",
-    },
-    {
-      src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3WmX5slCNuHLi8bLeY9MK7whWMhyjornFLsS6V7wx_.woff2",
-      fontWeight: 700,
-      fontStyle: "italic",
-    },
   ],
 });
 Font.register({
   family: "DM Sans",
-  fonts: [
-    {
-      src: "https://fonts.gstatic.com/s/dmsans/v14/rP2Hp2ywxg089UriCZa4ET-DNl0.woff2",
-      fontWeight: 400,
-      fontStyle: "normal",
-    },
-    {
-      src: "https://fonts.gstatic.com/s/dmsans/v14/rP2Hp2ywxg089UriCZa4ET-DNl0.woff2",
-      fontWeight: 500,
-      fontStyle: "normal",
-    },
-  ],
+  src: "https://fonts.gstatic.com/s/dmsans/v15/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAkJxhTmf3ZGMZpg.woff2",
 });
 Font.registerHyphenationCallback((word) => [word]);
 

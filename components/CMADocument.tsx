@@ -9,10 +9,6 @@ import {
   Font,
 } from "@react-pdf/renderer";
 
-Font.register({
-  family: "Cinzel",
-  src: "https://fonts.gstatic.com/s/cinzel/v23/8vIJ7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2",
-});
 
 Font.register({
   family: "Cormorant Garamond",
@@ -54,11 +50,11 @@ const styles = StyleSheet.create({
   header: { backgroundColor: COLORS.olive, padding: "16 24", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   headerLeft: {},
   headerRight: { alignItems: "flex-end" },
-  logoText: { fontFamily: "Cinzel", fontSize: 16, color: COLORS.cream, letterSpacing: 4 },
+  logoText: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 16, color: COLORS.cream, letterSpacing: 4 },
   headerSub: { fontFamily: "Cormorant Garamond", fontSize: 8, color: COLORS.cream, opacity: 0.6, marginTop: 2 },
-  headerTitle: { fontFamily: "Cinzel", fontSize: 9, color: COLORS.cream, letterSpacing: 2 },
+  headerTitle: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 9, color: COLORS.cream, letterSpacing: 2 },
   section: { margin: "8 16" },
-  sectionTitle: { fontFamily: "Cinzel", fontSize: 7, letterSpacing: 3, color: COLORS.olive, textTransform: "uppercase", marginBottom: 6 },
+  sectionTitle: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 7, letterSpacing: 3, color: COLORS.olive, textTransform: "uppercase", marginBottom: 6 },
   subjectStrip: { flexDirection: "row", backgroundColor: COLORS.white, borderRadius: 4, overflow: "hidden" },
   subjectCell: { flex: 1, padding: "8 12", borderRight: `0.5pt solid ${COLORS.sage}` },
   subjectLabel: { fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.sage },
@@ -69,7 +65,7 @@ const styles = StyleSheet.create({
   tableCell: { fontSize: 8, color: COLORS.textDark, paddingHorizontal: 6 },
   pricePanel: { flex: 1, borderRadius: 4, padding: "12 8", alignItems: "center" },
   pricePanelLabel: { fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.cream, opacity: 0.7, marginBottom: 4 },
-  pricePanelValue: { fontFamily: "Cinzel", fontSize: 13, color: COLORS.cream },
+  pricePanelValue: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.cream },
   pricePanelSub: { fontSize: 7, color: COLORS.cream, opacity: 0.6, marginTop: 3 },
   narrative: { fontFamily: "Cormorant Garamond", fontSize: 9, color: COLORS.textMid, fontStyle: "italic", lineHeight: 1.5 },
   footer: { margin: "4 16 12", borderTop: `0.5pt solid ${COLORS.sage}`, paddingTop: 6, alignItems: "center" },
@@ -164,11 +160,11 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
             <View style={{ flexDirection: "row", gap: 8 }}>
               <View style={{ flex: 1, backgroundColor: COLORS.cream, borderRadius: 4, padding: "10 8", alignItems: "center" }}>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.sage, marginBottom: 3 }}>Original Asking Price</Text>
-                <Text style={{ fontFamily: "Cinzel", fontSize: 13, color: COLORS.olive }}>{fmtRand(params.askingPrice)}</Text>
+                <Text style={{ fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.olive }}>{fmtRand(params.askingPrice)}</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: COLORS.olive, borderRadius: 4, padding: "10 8", alignItems: "center" }}>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.cream, opacity: 0.7, marginBottom: 3 }}>Market Mid-Point</Text>
-                <Text style={{ fontFamily: "Cinzel", fontSize: 13, color: COLORS.cream }}>{fmtRand(result.midMarketPrice)}</Text>
+                <Text style={{ fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.cream }}>{fmtRand(result.midMarketPrice)}</Text>
               </View>
             </View>
           </View>
@@ -236,7 +232,7 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
           <Text style={styles.footerText}>
             This report is prepared for informational purposes only and does not constitute a formal valuation. Data sourced from Lightstone.
           </Text>
-          <Text style={[styles.footerText, { fontFamily: "Cinzel", letterSpacing: 2, marginTop: 3 }]}>
+          <Text style={[styles.footerText, { fontFamily: "Cormorant Garamond", fontWeight: 700, letterSpacing: 2, marginTop: 3 }]}>
             HOME GROUND REAL ESTATE | homegroundestates.co.za | Ballito, KwaZulu-Natal North Coast
           </Text>
         </View>
