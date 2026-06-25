@@ -132,6 +132,7 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
             {/* Note: react-pdf does not support mix-blend-mode; white logo background
                 is visible against the dark olive header. Use a cream/white logo variant
                 for a fully transparent result when one is available. */}
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image src="/images/logo.png" style={{ height: 40 }} />
           </View>
           <View style={styles.headerRight}>

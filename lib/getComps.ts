@@ -27,6 +27,13 @@ export interface Transaction {
   registration_date: string;
   is_market_sale: boolean;
   note?: string;
+  // enrichment fields (from property_attributes)
+  sea_view?: boolean;
+  view_rating?: number;
+  dwelling_type?: string;
+  condition_rating?: number;
+  enrichment_notes?: string;
+  is_enriched?: boolean;
 }
 
 export interface OutlierBounds {
@@ -141,6 +148,32 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
       price_per_m2: Number(row.price_per_m2),
     };
   });
+
+  // Fetch enrichment data for all returned comps
+  const titleDeedNos = comps.map((c) => c.title_deed_no).filter(Boolean) as string[];
+  if (titleDeedNos.length > 0) {
+    const { data: enrichRows } = await supabase
+      .from("property_attributes")
+      .select("*")
+      .in("title_deed_no", titleDeedNos);
+
+    if (enrichRows && enrichRows.length > 0) {
+      const enrichMap = new Map<string, Record<string, unknown>>();
+      for (const r of enrichRows) enrichMap.set(r.title_deed_no, r);
+      for (const comp of comps) {
+        if (!comp.title_deed_no) continue;
+        const e = enrichMap.get(comp.title_deed_no);
+        if (!e) continue;
+        comp.is_enriched = true;
+        if (e.built_area_m2 != null) comp.built_area_m2 = Number(e.built_area_m2);
+        if (e.sea_view != null) comp.sea_view = Boolean(e.sea_view);
+        if (e.view_rating != null) comp.view_rating = Number(e.view_rating);
+        if (e.property_type != null) comp.dwelling_type = String(e.property_type);
+        if (e.condition_rating != null) comp.condition_rating = Number(e.condition_rating);
+        if (e.enrichment_notes != null) comp.enrichment_notes = String(e.enrichment_notes);
+      }
+    }
+  }
 
   // Price indications: percentiles of actual comp sale prices.
   // ERF-based price_per_m2 from Lightstone is not suitable for
