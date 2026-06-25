@@ -149,8 +149,26 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     };
   });
 
+  // Deduplicate: when multiple comps share same title_deed_no + registration_date,
+  // keep only the largest (dwelling), discard smaller ones (garages/parking bays).
+  const compsByDeedAndDate = new Map<string, Transaction[]>();
+  for (const comp of comps) {
+    const key = `${comp.title_deed_no}|${comp.registration_date}`;
+    if (!compsByDeedAndDate.has(key)) compsByDeedAndDate.set(key, []);
+    compsByDeedAndDate.get(key)!.push(comp);
+  }
+  const dedupedComps: Transaction[] = [];
+  for (const group of Array.from(compsByDeedAndDate.values())) {
+    if (group.length === 1) {
+      dedupedComps.push(group[0]);
+    } else {
+      const largest = group.reduce((max: Transaction, c: Transaction) => (c.size_m2 > max.size_m2 ? c : max));
+      dedupedComps.push(largest);
+    }
+  }
+
   // Fetch enrichment data for all returned comps
-  const titleDeedNos = comps.map((c) => c.title_deed_no).filter(Boolean) as string[];
+  const titleDeedNos = dedupedComps.map((c) => c.title_deed_no).filter(Boolean) as string[];
   if (titleDeedNos.length > 0) {
     const { data: enrichRows } = await supabase
       .from("property_attributes")
@@ -160,7 +178,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     if (enrichRows && enrichRows.length > 0) {
       const enrichMap = new Map<string, Record<string, unknown>>();
       for (const r of enrichRows) enrichMap.set(r.title_deed_no, r);
-      for (const comp of comps) {
+      for (const comp of dedupedComps) {
         if (!comp.title_deed_no) continue;
         const e = enrichMap.get(comp.title_deed_no);
         if (!e) continue;
@@ -179,7 +197,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   // ERF-based price_per_m2 from Lightstone is not suitable for
   // built-area multiplication, so we derive values directly from
   // the distribution of comparable sale prices.
-  const salePrices = comps
+  const salePrices = dedupedComps
     .map((c) => c.sales_price)
     .filter((p) => p > 0)
     .sort((a, b) => a - b);
@@ -189,7 +207,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   const strongPrice = percentile(salePrices, 75);
 
   // ERF-based R/m² kept for reference labels on the panels only.
-  const erfPricesPerM2 = comps
+  const erfPricesPerM2 = dedupedComps
     .map((c) => c.price_per_m2)
     .filter((p) => p > 0)
     .sort((a, b) => a - b);
@@ -201,7 +219,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   const outlierBounds = calculateOutlierBounds(salePrices);
 
   return {
-    comps,
+    comps: dedupedComps,
     p25PricePerM2,
     medianPricePerM2,
     p75PricePerM2,

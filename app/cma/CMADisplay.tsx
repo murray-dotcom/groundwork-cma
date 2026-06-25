@@ -175,6 +175,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
     },
     notes,
     narrative,
+    trends,
     today,
   };
 

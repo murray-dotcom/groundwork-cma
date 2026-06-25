@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
 interface CMADocumentProps {
   logoSrc?: string;
   cmaData: {
+    trends?: Array<{ quarter: string; median_price: number; count: number }>;
     params: {
       address: string;
       estates: string[];
@@ -93,7 +94,7 @@ interface CMADocumentProps {
 }
 
 export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
-  const { params, result, notes, narrative, today } = cmaData;
+  const { params, result, notes, narrative, trends, today } = cmaData;
 
   const closestId = result.comps.length > 0
     ? result.comps.reduce((best, c) => {
@@ -184,7 +185,26 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
           </View>
         </View>
 
-        {/* Trend chart is screen-only — excluded from PDF */}
+        {/* Price trend chart */}
+        {trends && trends.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Price Trend</Text>
+            <View style={{ backgroundColor: COLORS.cream, borderRadius: 4, padding: 12, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-around", height: 120 }}>
+              {trends.slice(-8).map((trend) => {
+                const minPrice = Math.min(...trends.map((t) => t.median_price));
+                const maxPrice = Math.max(...trends.map((t) => t.median_price));
+                const range = maxPrice - minPrice || 1;
+                const barHeight = ((trend.median_price - minPrice) / range) * 80 + 10;
+                return (
+                  <View key={trend.quarter} style={{ alignItems: "center", flex: 1 }}>
+                    <View style={{ backgroundColor: COLORS.bronze, width: 12, height: barHeight, borderRadius: 2, marginBottom: 4 }} />
+                    <Text style={{ fontSize: 6, color: COLORS.textMid, textAlign: "center" }}>{trend.quarter}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
 
         {/* Price panels */}
         <View style={styles.section}>

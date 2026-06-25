@@ -34,6 +34,11 @@ interface PDFDownloadButtonProps {
     };
     notes: Record<string, string>;
     narrative: string;
+    trends: Array<{
+      quarter: string;
+      median_price: number;
+      count: number;
+    }>;
     today: string;
   };
 }
