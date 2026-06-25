@@ -7,19 +7,60 @@ import path from "path";
 
 Font.register({
   family: "Cinzel",
-  src: "https://fonts.gstatic.com/s/cinzel/v23/8vIJ7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2",
+  fonts: [
+    {
+      src: "https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2",
+      fontWeight: 400,
+      fontStyle: "normal",
+    },
+    {
+      src: "https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2",
+      fontWeight: 700,
+      fontStyle: "normal",
+    },
+  ],
 });
 Font.register({
   family: "Cormorant Garamond",
   fonts: [
-    { src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3YmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2", fontWeight: 400 },
-    { src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3WmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2", fontWeight: 600 },
+    {
+      src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3YmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2",
+      fontWeight: 400,
+      fontStyle: "normal",
+    },
+    {
+      src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3WmX5slCNuHLi8bLeY9MK7whWMhyjornFLsS6V7wx_.woff2",
+      fontWeight: 400,
+      fontStyle: "italic",
+    },
+    {
+      src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3YmX5slCNuHLi8bLeY9MK7whWMhyjYrHpK.woff2",
+      fontWeight: 700,
+      fontStyle: "normal",
+    },
+    {
+      src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3WmX5slCNuHLi8bLeY9MK7whWMhyjornFLsS6V7wx_.woff2",
+      fontWeight: 700,
+      fontStyle: "italic",
+    },
   ],
 });
 Font.register({
   family: "DM Sans",
-  src: "https://fonts.gstatic.com/s/dmsans/v14/rP2Hp2ywxg089UriCZa4ET-DNl0.woff2",
+  fonts: [
+    {
+      src: "https://fonts.gstatic.com/s/dmsans/v14/rP2Hp2ywxg089UriCZa4ET-DNl0.woff2",
+      fontWeight: 400,
+      fontStyle: "normal",
+    },
+    {
+      src: "https://fonts.gstatic.com/s/dmsans/v14/rP2Hp2ywxg089UriCZa4ET-DNl0.woff2",
+      fontWeight: 500,
+      fontStyle: "normal",
+    },
+  ],
 });
+Font.registerHyphenationCallback((word) => [word]);
 
 function getLogoDataUrl(): string | undefined {
   try {
