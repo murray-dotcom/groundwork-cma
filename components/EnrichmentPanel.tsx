@@ -65,7 +65,7 @@ export default function EnrichmentPanel({ titleDeedNo, estate, initial, onSaved,
     if (builtArea !== "") payload.built_area_m2 = Number(builtArea);
     payload.sea_view = seaView;
     if (viewRating > 0) payload.view_rating = viewRating;
-    if (dwellingType) payload.property_type = dwellingType;
+    if (dwellingType) payload.property_detail_type = dwellingType;
     if (conditionRating > 0) payload.condition_rating = conditionRating;
     if (notes) payload.enrichment_notes = notes;
 
