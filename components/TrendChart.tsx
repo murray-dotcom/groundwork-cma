@@ -8,7 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Dot,
 } from "recharts";
 import type { TrendPoint } from "@/lib/getTrends";
 
