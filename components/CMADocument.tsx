@@ -129,11 +129,8 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            {/* Note: react-pdf does not support mix-blend-mode; white logo background
-                is visible against the dark olive header. Use a cream/white logo variant
-                for a fully transparent result when one is available. */}
             {/* eslint-disable-next-line jsx-a11y/alt-text */}
-            <Image src="/images/logo.png" style={{ height: 40 }} />
+            <Image src="/images/logo_2.png" style={{ height: 40 }} />
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>COMPARABLE MARKET ANALYSIS</Text>

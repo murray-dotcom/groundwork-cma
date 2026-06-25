@@ -196,9 +196,9 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
           <div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/logo.png"
+              src="/images/logo_2.png"
               alt="Home Ground Real Estate"
-              style={{ height: "52px", mixBlendMode: "multiply" }}
+              style={{ height: "52px" }}
             />
           </div>
           <div className="text-right">
