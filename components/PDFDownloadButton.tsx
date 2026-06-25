@@ -53,7 +53,10 @@ export default function PDFDownloadButton({ cmaData }: PDFDownloadButtonProps) {
       });
 
       if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error("PDF API error:", errorData);
+        setError(`PDF failed: ${errorData.error ?? response.statusText}`);
+        return;
       }
 
       const blob = await response.blob();

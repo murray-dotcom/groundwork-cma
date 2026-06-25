@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
 });
 
 interface CMADocumentProps {
+  logoSrc?: string;
   cmaData: {
     params: {
       address: string;
@@ -110,7 +111,7 @@ interface CMADocumentProps {
   };
 }
 
-export default function CMADocument({ cmaData }: CMADocumentProps) {
+export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
   const { params, result, notes, narrative, today } = cmaData;
 
   const closestId = result.comps.length > 0
@@ -130,7 +131,7 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             {/* eslint-disable-next-line jsx-a11y/alt-text */}
-            <Image src="/images/logo_2.png" style={{ height: 60 }} />
+            <Image src={logoSrc ?? "/images/logo_2.png"} style={{ height: 60 }} />
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>COMPARABLE MARKET ANALYSIS</Text>
