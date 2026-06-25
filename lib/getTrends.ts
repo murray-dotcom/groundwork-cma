@@ -52,7 +52,14 @@ export async function getTrends(params: TrendParams): Promise<TrendPoint[]> {
   const { data, error } = await query;
   if (error) throw new Error(error.message);
 
-  const deduped = dedupeGarages(data ?? []);
+  const deduped = dedupeGarages(
+    (data ?? []).map((row) => ({
+      ...row,
+      size_m2: Number(row.size_m2),
+      sales_price: Number(row.sales_price),
+      price_per_m2: Number(row.price_per_m2),
+    }))
+  );
 
   // Group by quarter client-side
   const groups = new Map<string, number[]>();
