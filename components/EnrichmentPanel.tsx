@@ -20,7 +20,15 @@ interface EnrichmentPanelProps {
   onClose: () => void;
 }
 
-const DWELLING_TYPES = ["House", "Townhouse", "Apartment", "Penthouse", "Duplex", "Simplex", "Vacant Land"];
+const DWELLING_TYPES = [
+  { value: "house", label: "House" },
+  { value: "townhouse", label: "Townhouse" },
+  { value: "apartment", label: "Apartment" },
+  { value: "penthouse", label: "Penthouse" },
+  { value: "duplex", label: "Duplex" },
+  { value: "simplex", label: "Simplex" },
+  { value: "vacant_land", label: "Vacant Land" },
+];
 
 function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hover, setHover] = useState(0);
@@ -65,7 +73,7 @@ export default function EnrichmentPanel({ titleDeedNo, estate, initial, onSaved,
     if (builtArea !== "") payload.built_area_m2 = Number(builtArea);
     payload.sea_view = seaView;
     if (viewRating > 0) payload.view_rating = viewRating;
-    if (dwellingType) payload.property_detail_type = dwellingType;
+    if (dwellingType) payload.property_detail_type = dwellingType.toLowerCase();
     if (conditionRating > 0) payload.condition_rating = conditionRating;
     if (notes) payload.enrichment_notes = notes;
 
@@ -120,7 +128,7 @@ export default function EnrichmentPanel({ titleDeedNo, estate, initial, onSaved,
             <label className={labelClass}>Dwelling Type</label>
             <select value={dwellingType} onChange={(e) => setDwellingType(e.target.value)} className={inputClass}>
               <option value="">— select —</option>
-              {DWELLING_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              {DWELLING_TYPES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
             </select>
           </div>
         </div>
