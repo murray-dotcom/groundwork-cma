@@ -71,6 +71,17 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   const cutoff = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - lookback, now.getUTCDate()));
   const cutoffDateStr = cutoff.toISOString().split("T")[0];
 
+  console.log("[getComps] query params:", {
+    estate,
+    property_type: propertyType,
+    sectionalScheme: sectionalScheme ?? null,
+    sizeMin,
+    sizeMax,
+    cutoffDate: cutoffDateStr,
+    lookback,
+    tolerance,
+  });
+
   let query = supabase
     .from("transactions")
     .select("*")
@@ -78,16 +89,28 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     .eq("property_type", propertyType)
     .eq("is_market_sale", true)
     .gte("registration_date", cutoffDateStr)
-    .gte("size_m2", sizeMin)
-    .lte("size_m2", sizeMax)
     .order("registration_date", { ascending: false })
     .limit(12);
+
+  // For freehold, size_m2 is the ERF so we can filter by it.
+  // For sectional title, size_m2 is the participation quota (often very
+  // different from the ERF size the broker enters), so skip the size
+  // filter — the scheme name via ILIKE already narrows the result set.
+  if (propertyType === "freehold") {
+    query = query.gte("size_m2", sizeMin).lte("size_m2", sizeMax);
+  }
 
   if (propertyType === "sectional_title" && sectionalScheme) {
     query = query.ilike("sectional_scheme", `%${sectionalScheme}%`);
   }
 
   const { data, error } = await query;
+
+  console.log("[getComps] raw response:", {
+    count: data?.length ?? 0,
+    error: error?.message ?? null,
+    sample: data?.[0] ?? null,
+  });
   if (error) throw new Error(error.message);
 
   const comps: Transaction[] = (data ?? []).map((row) => ({
