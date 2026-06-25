@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
   tableHeaderCell: { fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 1.5, color: COLORS.cream, paddingHorizontal: 6 },
   tableRow: { flexDirection: "row", paddingVertical: 4 },
   tableCell: { fontSize: 8, color: COLORS.textDark, paddingHorizontal: 6 },
+  askingPricePanel: { flex: 1, marginRight: 8, backgroundColor: "#F5F1EA", borderRadius: 6, padding: 20, alignItems: "center", justifyContent: "center" },
   pricePanel: { flex: 1, borderRadius: 4, padding: "12 8", alignItems: "center" },
   pricePanelLabel: { fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.cream, opacity: 0.7, marginBottom: 4 },
   pricePanelValue: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.cream },
@@ -317,7 +318,7 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Negotiation Position</Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
-              <View style={{ flex: 1, backgroundColor: "#F5F1EA", borderRadius: 6, padding: 20, alignItems: "center", justifyContent: "center", marginRight: 8 }}>
+              <View style={styles.askingPricePanel}>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.sage, marginBottom: 3 }}>Original Asking Price</Text>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.olive }}>{fmtRand(params.askingPrice)}</Text>
               </View>
