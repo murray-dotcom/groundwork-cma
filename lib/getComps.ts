@@ -15,6 +15,7 @@ export interface Transaction {
   address: string;
   street_number?: string;
   street?: string;
+  unit?: string;
   title_deed_no?: string;
   estate: string;
   property_type: string;
@@ -114,15 +115,32 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   });
   if (error) throw new Error(error.message);
 
-  const comps: Transaction[] = (data ?? []).map((row) => ({
-    ...row,
-    address:
-      [row.street_number, row.street].filter(Boolean).join(" ").trim() ||
-      row.title_deed_no ||
-      "",
-    sales_price: Number(row.sales_price),
-    price_per_m2: Number(row.price_per_m2),
-  }));
+  const comps: Transaction[] = (data ?? []).map((row) => {
+    let address: string;
+    if (row.property_type === "sectional_title") {
+      if (row.unit && row.sectional_scheme) {
+        const schemeTitle = (row.sectional_scheme as string)
+          .toLowerCase()
+          .replace(/\b\w/g, (c: string) => c.toUpperCase());
+        address = `Unit ${row.unit}, ${schemeTitle}`;
+      } else if (row.street) {
+        address = [row.street_number, row.street].filter(Boolean).join(" ").trim();
+      } else {
+        address = row.title_deed_no || "";
+      }
+    } else {
+      address =
+        [row.street_number, row.street].filter(Boolean).join(" ").trim() ||
+        row.title_deed_no ||
+        "";
+    }
+    return {
+      ...row,
+      address,
+      sales_price: Number(row.sales_price),
+      price_per_m2: Number(row.price_per_m2),
+    };
+  });
 
   // Price indications: percentiles of actual comp sale prices.
   // ERF-based price_per_m2 from Lightstone is not suitable for
