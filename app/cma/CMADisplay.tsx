@@ -12,8 +12,9 @@ const TrendChart = dynamic(() => import("@/components/TrendChart"), { ssr: false
 interface CMADisplayProps {
   params: {
     address: string;
-    estate: string;
+    estates: string[];
     propertyType: string;
+    schemes?: string[];
     erfSize: number;
     builtArea?: number;
     askingPrice?: number;
@@ -101,7 +102,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         address: params.address,
-        estate: params.estate,
+        estate: params.estates.join(", "),
         compsCount: filteredComps.length,
         conservativePrice: prices.conservativePrice,
         midMarketPrice: prices.midMarketPrice,
@@ -150,7 +151,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
           <div className="text-right">
             <p className="font-cinzel text-sm tracking-[0.15em] text-cream/90">COMPARABLE MARKET ANALYSIS</p>
             <p className="font-cormorant text-cream/60 text-sm mt-0.5">
-              {params.address}, {params.estate}
+              {params.address}, {params.estates.join(" + ")}
             </p>
             <p className="font-dm-sans text-cream/50 text-xs mt-0.5">
               Prepared: {today} | Lightstone Data
@@ -164,7 +165,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
             { label: "Subject Property", value: params.address },
             { label: "ERF Size", value: `${params.erfSize} m²` },
             { label: "Built Area", value: params.builtArea ? `${params.builtArea} m²` : "—" },
-            { label: "Estate", value: params.estate },
+            { label: "Estate", value: params.estates.join(" + ") },
           ].map(({ label, value }) => (
             <div key={label} className="px-6 py-4">
               <p className="font-cormorant text-xs uppercase tracking-widest text-sage">{label}</p>
@@ -200,7 +201,11 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         {/* SECTION 4 — Comparable sales table */}
         <div className="bg-white border border-sage/20 rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-sage/20 flex items-center justify-between">
-            <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase">Comparable Sales</h2>
+            <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase">
+              {params.schemes && params.schemes.length > 0
+                ? `Comparable Sales — ${params.schemes.join(", ")}`
+                : "Comparable Sales"}
+            </h2>
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <span className="font-cormorant text-xs text-sage">Exclude outliers</span>
               <button
@@ -266,9 +271,9 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         {/* SECTION 4b — Price trend chart (screen only) */}
         <div className="bg-white border border-sage/20 rounded-lg p-6">
           <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">
-            Price Trend — {params.estate}
+            Price Trend — {params.estates.join(" + ")}
           </h2>
-          <TrendChart data={trends} estate={params.estate} />
+          <TrendChart data={trends} estate={params.estates.join(", ")} />
         </div>
 
         {/* SECTION 5 — Price indication panels */}

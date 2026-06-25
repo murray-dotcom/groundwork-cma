@@ -1,9 +1,9 @@
 import { supabase } from "./supabase";
 
 export interface CMAParams {
-  estate: string;
+  estates: string[];
   propertyType: "freehold" | "sectional_title";
-  sectionalScheme?: string;
+  schemes?: string[];
   erfSize: number;
   builtArea?: number;
   lookback: number;
@@ -63,7 +63,7 @@ function percentile(sortedArr: number[], p: number): number {
 }
 
 export async function getComps(params: CMAParams): Promise<CompsResult> {
-  const { estate, propertyType, sectionalScheme, erfSize, lookback, tolerance } = params;
+  const { estates, propertyType, schemes, erfSize, lookback, tolerance } = params;
   const sizeMin = Math.floor(erfSize * (1 - tolerance));
   const sizeMax = Math.ceil(erfSize * (1 + tolerance));
   // Equivalent to Postgres: current_date - interval '${lookback} months'
@@ -72,9 +72,9 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   const cutoffDateStr = cutoff.toISOString().split("T")[0];
 
   console.log("[getComps] query params:", {
-    estate,
+    estates,
     property_type: propertyType,
-    sectionalScheme: sectionalScheme ?? null,
+    schemes: schemes ?? null,
     sizeMin,
     sizeMax,
     cutoffDate: cutoffDateStr,
@@ -85,7 +85,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   let query = supabase
     .from("transactions")
     .select("*")
-    .eq("estate", estate)
+    .in("estate", estates)
     .eq("property_type", propertyType)
     .eq("is_market_sale", true)
     .gte("registration_date", cutoffDateStr)
@@ -95,13 +95,14 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   // For freehold, size_m2 is the ERF so we can filter by it.
   // For sectional title, size_m2 is the participation quota (often very
   // different from the ERF size the broker enters), so skip the size
-  // filter — the scheme name via ILIKE already narrows the result set.
+  // filter — the scheme names via ILIKE already narrow the result set.
   if (propertyType === "freehold") {
     query = query.gte("size_m2", sizeMin).lte("size_m2", sizeMax);
   }
 
-  if (propertyType === "sectional_title" && sectionalScheme) {
-    query = query.ilike("sectional_scheme", `%${sectionalScheme}%`);
+  if (propertyType === "sectional_title" && schemes && schemes.length > 0) {
+    const orFilter = schemes.map((s) => `sectional_scheme.ilike.%${s}%`).join(",");
+    query = query.or(orFilter);
   }
 
   const { data, error } = await query;

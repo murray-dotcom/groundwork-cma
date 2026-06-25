@@ -9,8 +9,9 @@ interface PDFDownloadButtonProps {
   cmaData: {
     params: {
       address: string;
-      estate: string;
+      estates: string[];
       propertyType: string;
+      schemes?: string[];
       erfSize: number;
       builtArea?: number;
       askingPrice?: number;

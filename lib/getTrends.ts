@@ -21,13 +21,13 @@ function median(sorted: number[]): number {
 }
 
 export interface TrendParams {
-  estate: string;
+  estates: string[];
   propertyType: "freehold" | "sectional_title";
-  sectionalScheme?: string;
+  schemes?: string[];
 }
 
 export async function getTrends(params: TrendParams): Promise<TrendPoint[]> {
-  const { estate, propertyType, sectionalScheme } = params;
+  const { estates, propertyType, schemes } = params;
 
   const cutoff = new Date();
   cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 3);
@@ -36,14 +36,15 @@ export async function getTrends(params: TrendParams): Promise<TrendPoint[]> {
   let query = supabase
     .from("transactions")
     .select("registration_date, sales_price")
-    .eq("estate", estate)
+    .in("estate", estates)
     .eq("property_type", propertyType)
     .eq("is_market_sale", true)
     .gte("registration_date", cutoffStr)
     .order("registration_date", { ascending: true });
 
-  if (propertyType === "sectional_title" && sectionalScheme) {
-    query = query.ilike("sectional_scheme", `%${sectionalScheme}%`);
+  if (propertyType === "sectional_title" && schemes && schemes.length > 0) {
+    const orFilter = schemes.map((s) => `sectional_scheme.ilike.%${s}%`).join(",");
+    query = query.or(orFilter);
   }
 
   const { data, error } = await query;

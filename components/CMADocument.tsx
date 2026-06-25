@@ -79,8 +79,9 @@ interface CMADocumentProps {
   cmaData: {
     params: {
       address: string;
-      estate: string;
+      estates: string[];
       propertyType: string;
+      schemes?: string[];
       erfSize: number;
       builtArea?: number;
       askingPrice?: number;
@@ -132,7 +133,7 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>COMPARABLE MARKET ANALYSIS</Text>
-            <Text style={[styles.headerSub, { marginTop: 3 }]}>{params.address}, {params.estate}</Text>
+            <Text style={[styles.headerSub, { marginTop: 3 }]}>{params.address}, {params.estates.join(" + ")}</Text>
             <Text style={[styles.headerSub, { marginTop: 1 }]}>Prepared: {today} | Lightstone Data</Text>
           </View>
         </View>
@@ -144,7 +145,7 @@ export default function CMADocument({ cmaData }: CMADocumentProps) {
               { label: "Subject Property", value: params.address },
               { label: "ERF Size", value: `${params.erfSize} m²` },
               { label: "Built Area", value: params.builtArea ? `${params.builtArea} m²` : "—" },
-              { label: "Estate", value: params.estate },
+              { label: "Estate", value: params.estates.join(" + ") },
             ].map(({ label, value }, i) => (
               <View key={label} style={[styles.subjectCell, i === 3 ? { borderRight: 0 } : {}]}>
                 <Text style={styles.subjectLabel}>{label}</Text>

@@ -7,9 +7,9 @@ import Link from "next/link";
 interface PageProps {
   searchParams: {
     address?: string;
-    estate?: string;
+    estates?: string;
     propertyType?: string;
-    sectionalScheme?: string;
+    schemes?: string;
     erfSize?: string;
     builtArea?: string;
     askingPrice?: string;
@@ -20,8 +20,13 @@ interface PageProps {
 
 export default async function CMAPage({ searchParams }: PageProps) {
   const address = searchParams.address ?? "";
-  const estate = searchParams.estate ?? "Simbithi Eco Estate";
+  const estates = searchParams.estates
+    ? searchParams.estates.split(",").map((e) => e.trim()).filter(Boolean)
+    : ["Simbithi Eco Estate"];
   const propertyType = (searchParams.propertyType ?? "freehold") as "freehold" | "sectional_title";
+  const schemes = searchParams.schemes
+    ? searchParams.schemes.split(",").map((s) => s.trim()).filter(Boolean)
+    : undefined;
   const erfSize = Number(searchParams.erfSize ?? 0);
   const builtArea = searchParams.builtArea ? Number(searchParams.builtArea) : undefined;
   const askingPrice = searchParams.askingPrice ? Number(searchParams.askingPrice) : undefined;
@@ -30,9 +35,9 @@ export default async function CMAPage({ searchParams }: PageProps) {
 
   const params = {
     address,
-    estate,
+    estates,
     propertyType,
-    sectionalScheme: searchParams.sectionalScheme,
+    schemes,
     erfSize,
     builtArea,
     askingPrice,
@@ -46,20 +51,8 @@ export default async function CMAPage({ searchParams }: PageProps) {
 
   try {
     [result, trends] = await Promise.all([
-      getComps({
-        estate,
-        propertyType,
-        sectionalScheme: searchParams.sectionalScheme,
-        erfSize,
-        builtArea,
-        lookback,
-        tolerance,
-      }),
-      getTrends({
-        estate,
-        propertyType,
-        sectionalScheme: searchParams.sectionalScheme,
-      }).catch(() => [] as TrendPoint[]),
+      getComps({ estates, propertyType, schemes, erfSize, builtArea, lookback, tolerance }),
+      getTrends({ estates, propertyType, schemes }).catch(() => [] as TrendPoint[]),
     ]);
   } catch (e: unknown) {
     error = e instanceof Error ? e.message : "Failed to fetch comparable sales.";
@@ -84,7 +77,7 @@ export default async function CMAPage({ searchParams }: PageProps) {
           <p className="font-cormorant text-lg text-gray-700 mb-2">No comparable sales found in the selected period.</p>
           <p className="font-cormorant text-sm text-sage mb-6">Try extending the lookback period or size tolerance.</p>
           <Link
-            href={`/?${new URLSearchParams({ address, estate, propertyType, erfSize: String(erfSize) }).toString()}`}
+            href={`/?${new URLSearchParams({ address, estates: estates.join(","), propertyType, erfSize: String(erfSize) }).toString()}`}
             className="bg-bronze text-cream font-cinzel tracking-[0.15em] text-xs px-6 py-3 rounded hover:bg-bronze/90 transition-colors"
           >
             Adjust Parameters
