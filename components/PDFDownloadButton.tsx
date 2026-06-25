@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface PDFDownloadButtonProps {
   cmaData: {
@@ -40,36 +40,56 @@ interface PDFDownloadButtonProps {
 
 export default function PDFDownloadButton({ cmaData }: PDFDownloadButtonProps) {
   const [loading, setLoading] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => { setIsClient(true); }, []);
-
-  if (!isClient) return null;
+  const [error, setError] = useState("");
 
   async function handleDownload() {
     setLoading(true);
+    setError("");
     try {
-      const [{ pdf }, { default: CMADocument }, { saveAs }] = await Promise.all([
-        import("@react-pdf/renderer"),
-        import("./CMADocument"),
-        import("file-saver"),
-      ]);
-      const blob = await pdf(<CMADocument cmaData={cmaData} />).toBlob();
+      const response = await fetch("/api/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cmaData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const address = cmaData.params.address.replace(/\s+/g, "_");
       const date = new Date().toISOString().split("T")[0];
-      const filename = `${cmaData.params.address.replace(/\s+/g, "_")}_CMA_${date}.pdf`;
-      saveAs(blob, filename);
+      a.href = url;
+      a.download = `${address}_CMA_${date}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      setError("PDF generation failed. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <button
-      onClick={handleDownload}
-      disabled={loading}
-      className="fixed bottom-6 right-6 bg-bronze text-cream font-cinzel tracking-[0.15em] text-xs px-6 py-3 rounded shadow-lg hover:bg-bronze/90 transition-colors disabled:opacity-60 z-50"
-    >
-      {loading ? "Generating PDF…" : "Download PDF"}
-    </button>
+    <div className="fixed bottom-6 right-6 flex flex-col items-end gap-2 z-50">
+      {error && (
+        <p className="font-dm-sans text-xs text-red-600 bg-white border border-red-200 rounded px-3 py-1.5 shadow">
+          {error}
+        </p>
+      )}
+      <button
+        onClick={handleDownload}
+        disabled={loading}
+        className="bg-bronze text-cream font-cinzel tracking-[0.15em] text-xs px-6 py-3 rounded shadow-lg hover:bg-bronze/90 transition-colors disabled:opacity-60 flex items-center gap-2"
+      >
+        {loading && (
+          <span className="inline-block w-3 h-3 border-2 border-cream/40 border-t-cream rounded-full animate-spin" />
+        )}
+        {loading ? "Generating PDF…" : "Download PDF"}
+      </button>
+    </div>
   );
 }
