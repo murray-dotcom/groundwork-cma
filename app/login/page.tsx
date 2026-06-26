@@ -21,7 +21,7 @@ export default function LoginPage() {
     setLoading(true);
     const { error: authError } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: "https://groundwork-cma.netlify.app/auth/callback" },
     });
     setLoading(false);
 
