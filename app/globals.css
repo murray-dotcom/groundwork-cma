@@ -36,13 +36,28 @@ body {
     min-height: unset !important;
   }
 
+  .recharts-surface {
+    overflow: visible !important;
+  }
+
+  .recharts-layer {
+    display: block !important;
+  }
+
   .recharts-responsive-container {
-    width: 100% !important;
+    width: 700px !important;
     height: 220px !important;
+    min-width: unset !important;
   }
 
   .recharts-wrapper {
-    width: 100% !important;
+    width: 700px !important;
+    height: 220px !important;
+  }
+
+  svg.recharts-surface {
+    width: 700px !important;
+    height: 220px !important;
   }
 
   @page {
