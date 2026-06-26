@@ -99,7 +99,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     .eq("is_market_sale", true)
     .gte("registration_date", cutoffDateStr)
     .order("registration_date", { ascending: false })
-    .limit(12);
+    .limit(50);
 
   // For freehold, size_m2 is the ERF so we can filter by it.
   // For sectional title, size_m2 is the participation quota (often very
@@ -152,9 +152,10 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   });
 
   const dedupedComps = dedupeGarages(comps) as Transaction[];
+  const finalComps = dedupedComps.slice(0, 12);
 
   // Fetch enrichment data for all returned comps
-  const titleDeedNos = dedupedComps.map((c) => c.title_deed_no).filter(Boolean) as string[];
+  const titleDeedNos = finalComps.map((c) => c.title_deed_no).filter(Boolean) as string[];
   if (titleDeedNos.length > 0) {
     const { data: enrichRows } = await supabase
       .from("property_attributes")
@@ -164,7 +165,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     if (enrichRows && enrichRows.length > 0) {
       const enrichMap = new Map<string, Record<string, unknown>>();
       for (const r of enrichRows) enrichMap.set(r.title_deed_no, r);
-      for (const comp of dedupedComps) {
+      for (const comp of finalComps) {
         if (!comp.title_deed_no) continue;
         const e = enrichMap.get(comp.title_deed_no);
         if (!e) continue;
@@ -183,7 +184,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   // ERF-based price_per_m2 from Lightstone is not suitable for
   // built-area multiplication, so we derive values directly from
   // the distribution of comparable sale prices.
-  const salePrices = dedupedComps
+  const salePrices = finalComps
     .map((c) => c.sales_price)
     .filter((p) => p > 0)
     .sort((a, b) => a - b);
@@ -193,7 +194,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   const strongPrice = percentile(salePrices, 75);
 
   // ERF-based R/m² kept for reference labels on the panels only.
-  const erfPricesPerM2 = dedupedComps
+  const erfPricesPerM2 = finalComps
     .map((c) => c.price_per_m2)
     .filter((p) => p > 0)
     .sort((a, b) => a - b);
@@ -205,7 +206,7 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
   const outlierBounds = calculateOutlierBounds(salePrices);
 
   return {
-    comps: dedupedComps,
+    comps: finalComps,
     p25PricePerM2,
     medianPricePerM2,
     p75PricePerM2,
