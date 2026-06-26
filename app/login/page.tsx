@@ -38,7 +38,7 @@ export default function LoginPage() {
       {/* Header */}
       <div className="bg-olive px-8 py-5 flex items-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/logo_2.png" alt="Home Ground Real Estate" style={{ height: "60px" }} />
+        <img src="/images/logo_2.png" alt="Home Ground Real Estate" style={{ height: "48px" }} />
       </div>
 
       {/* Card */}
