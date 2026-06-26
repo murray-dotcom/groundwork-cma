@@ -17,8 +17,32 @@ body {
     print-color-adjust: exact;
   }
 
+  * {
+    flex-shrink: 1 !important;
+  }
+
   .cma-section {
     break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 12px !important;
+  }
+
+  .comp-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .negotiation-panel {
+    min-height: unset !important;
+  }
+
+  .recharts-responsive-container {
+    width: 100% !important;
+    height: 220px !important;
+  }
+
+  .recharts-wrapper {
+    width: 100% !important;
   }
 
   @page {

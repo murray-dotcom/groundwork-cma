@@ -227,7 +227,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
 
         {/* SECTION 3 — Negotiation position (if asking price provided) */}
         {params.askingPrice && params.askingPrice > 0 && (
-          <div className="cma-section bg-white border border-sage/20 rounded-lg p-6">
+          <div className="cma-section negotiation-panel bg-white border border-sage/20 rounded-lg p-6">
             <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">Negotiation Position</h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="bg-cream rounded p-4 text-center">
@@ -248,6 +248,14 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
             </p>
           </div>
         )}
+
+        {/* SECTION 3b — Price trend chart */}
+        <div className="cma-section bg-white border border-sage/20 rounded-lg p-6">
+          <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">
+            Price Trend — {params.estates.join(" + ")}
+          </h2>
+          <TrendChart data={trends} estate={params.estates.join(", ")} />
+        </div>
 
         {/* SECTION 4 — Comparable sales table */}
         <div className="cma-section bg-white border border-sage/20 rounded-lg overflow-hidden">
@@ -314,7 +322,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
               <tbody>
                 {filteredComps.map((comp, i) => (
                   <React.Fragment key={comp.id}>
-                    <tr className={i % 2 === 0 ? "bg-cream/40" : "bg-white"}>
+                    <tr className={`comp-row ${i % 2 === 0 ? "bg-cream/40" : "bg-white"}`}>
                       <td className="px-4 py-3 font-dm-sans text-gray-800">
                         {comp.address}
                         {comp.id === closestId && <span className="ml-1 text-bronze">★</span>}
@@ -378,14 +386,6 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
               </tbody>
             </table>
           </div>
-        </div>
-
-        {/* SECTION 4b — Price trend chart (screen only) */}
-        <div className="cma-section bg-white border border-sage/20 rounded-lg p-6" data-no-print>
-          <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">
-            Price Trend — {params.estates.join(" + ")}
-          </h2>
-          <TrendChart data={trends} estate={params.estates.join(", ")} />
         </div>
 
         {/* SECTION 5 — Price indication panels */}

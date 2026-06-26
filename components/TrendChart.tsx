@@ -103,7 +103,7 @@ export default function TrendChart({ data, estate }: TrendChartProps) {
           Limited trend data — more sales history needed
         </p>
       )}
-      <ResponsiveContainer width="100%" height={220}>
+      <ResponsiveContainer width="100%" height={220} minWidth={400}>
         <LineChart data={data} margin={{ top: 8, right: 56, left: 8, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#87825E22" />
           <XAxis
