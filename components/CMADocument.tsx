@@ -57,16 +57,16 @@ function toPath(pts: Array<{ x: number; y: number }>): string {
 
 const styles = StyleSheet.create({
   page: { backgroundColor: COLORS.cream, fontFamily: "DM Sans", fontSize: 9, padding: 0 },
-  header: { backgroundColor: COLORS.olive, padding: "16 24", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  header: { backgroundColor: COLORS.olive, padding: "10 20", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   headerLeft: {},
   headerRight: { alignItems: "flex-end" },
   logoText: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 16, color: COLORS.cream, letterSpacing: 4 },
   headerSub: { fontFamily: "Cormorant Garamond", fontSize: 8, color: COLORS.cream, opacity: 0.6, marginTop: 2 },
   headerTitle: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 9, color: COLORS.cream, letterSpacing: 2 },
-  section: { margin: "8 16" },
+  section: { margin: "5 16" },
   sectionTitle: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 7, letterSpacing: 3, color: COLORS.olive, textTransform: "uppercase", marginBottom: 6 },
   subjectStrip: { flexDirection: "row", backgroundColor: COLORS.white, borderRadius: 4, overflow: "hidden" },
-  subjectCell: { flex: 1, padding: "8 12", borderRight: `0.5pt solid ${COLORS.sage}` },
+  subjectCell: { flex: 1, padding: "6 10", borderRight: `0.5pt solid ${COLORS.sage}` },
   subjectLabel: { fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.sage },
   subjectValue: { fontSize: 8, fontWeight: 600, color: COLORS.textDark, marginTop: 2 },
   tableHeader: { flexDirection: "row", backgroundColor: COLORS.olive, padding: "5 0" },
@@ -74,12 +74,12 @@ const styles = StyleSheet.create({
   tableRow: { flexDirection: "row", paddingVertical: 4 },
   tableCell: { fontSize: 8, color: COLORS.textDark, paddingHorizontal: 6 },
   askingPricePanel: { flex: 1, marginRight: 8, backgroundColor: "#F5F1EA", borderRadius: 6, padding: 20, alignItems: "center", justifyContent: "center" },
-  pricePanel: { flex: 1, borderRadius: 4, padding: "12 8", alignItems: "center" },
+  pricePanel: { flex: 1, borderRadius: 4, padding: "8 6", alignItems: "center" },
   pricePanelLabel: { fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.cream, opacity: 0.7, marginBottom: 4 },
   pricePanelValue: { fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.cream },
   pricePanelSub: { fontSize: 7, color: COLORS.cream, opacity: 0.6, marginTop: 3 },
   narrative: { fontFamily: "Cormorant Garamond", fontSize: 9, color: COLORS.textMid, fontStyle: "normal", lineHeight: 1.5 },
-  footer: { margin: "4 16 12", borderTop: `0.5pt solid ${COLORS.sage}`, paddingTop: 6, alignItems: "center" },
+  footer: { margin: "3 12 8", borderTop: `0.5pt solid ${COLORS.sage}`, paddingTop: 6, alignItems: "center" },
   footerText: { fontFamily: "Cormorant Garamond", fontSize: 6.5, color: COLORS.sage, textAlign: "center", lineHeight: 1.6 },
 });
 
@@ -317,12 +317,12 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
         {params.askingPrice && params.askingPrice > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Negotiation Position</Text>
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              <View style={styles.askingPricePanel}>
+            <View style={{ flexDirection: "row", marginTop: 0 }}>
+              <View style={{ flex: 1, marginRight: 6, backgroundColor: "#F5F1EA", borderRadius: 4, padding: "10 8", alignItems: "center", justifyContent: "center" }}>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.sage, marginBottom: 3 }}>Original Asking Price</Text>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.olive }}>{fmtRand(params.askingPrice)}</Text>
               </View>
-              <View style={{ flex: 1, backgroundColor: COLORS.olive, borderRadius: 4, padding: "10 8", alignItems: "center" }}>
+              <View style={{ flex: 1, backgroundColor: COLORS.olive, borderRadius: 4, padding: "10 8", alignItems: "center", justifyContent: "center" }}>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontSize: 7, textTransform: "uppercase", letterSpacing: 2, color: COLORS.cream, opacity: 0.7, marginBottom: 3 }}>Market Mid-Point</Text>
                 <Text style={{ fontFamily: "Cormorant Garamond", fontWeight: 700, fontSize: 13, color: COLORS.cream }}>{fmtRand(result.midMarketPrice)}</Text>
               </View>
@@ -343,7 +343,7 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
               <Text style={[styles.tableHeaderCell, { width: colWidths.ppm }]}>R/m²</Text>
               <Text style={[styles.tableHeaderCell, { width: colWidths.note }]}>Note</Text>
             </View>
-            {result.comps.map((comp, i) => (
+            {result.comps.slice(0, 10).map((comp, i) => (
               <View key={comp.id} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? "#F5F1EA" : COLORS.white }]}>
                 <Text style={[styles.tableCell, { width: colWidths.address }]}>
                   {comp.address}{comp.id === closestId ? " ★" : ""}
@@ -372,13 +372,13 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
         {/* Price panels */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Market-Derived Price Indication</Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={{ flexDirection: "row" }}>
             {[
-              { label: "Conservative", price: result.conservativePrice, ppm: result.p25PricePerM2, bg: COLORS.sage },
-              { label: "Mid-Market", price: result.midMarketPrice, ppm: result.medianPricePerM2, bg: COLORS.olive },
-              { label: "Strong Market", price: result.strongPrice, ppm: result.p75PricePerM2, bg: COLORS.bronze },
-            ].map(({ label, price, ppm, bg }) => (
-              <View key={label} style={[styles.pricePanel, { backgroundColor: bg }]}>
+              { label: "Conservative", price: result.conservativePrice, ppm: result.p25PricePerM2, bg: COLORS.sage, mr: 6 },
+              { label: "Mid-Market", price: result.midMarketPrice, ppm: result.medianPricePerM2, bg: COLORS.olive, mr: 6 },
+              { label: "Strong Market", price: result.strongPrice, ppm: result.p75PricePerM2, bg: COLORS.bronze, mr: 0 },
+            ].map(({ label, price, ppm, bg, mr }) => (
+              <View key={label} style={[styles.pricePanel, { backgroundColor: bg, marginRight: mr }]}>
                 <Text style={styles.pricePanelLabel}>{label}</Text>
                 <Text style={styles.pricePanelValue}>{fmtRand(price)}</Text>
                 <Text style={styles.pricePanelSub}>@ {fmtPpm(ppm)} ERF</Text>
@@ -388,7 +388,7 @@ export default function CMADocument({ cmaData, logoSrc }: CMADocumentProps) {
         </View>
 
         {/* Recommended range + narrative */}
-        <View style={[styles.section, { backgroundColor: COLORS.white, borderRadius: 4, padding: "10 12" }]}>
+        <View style={[styles.section, { backgroundColor: COLORS.white, borderRadius: 4, padding: "8 10" }]}>
           <Text style={[styles.sectionTitle, { marginBottom: 4 }]}>
             RECOMMENDED NEGOTIATED RANGE: {fmtRand(result.conservativePrice)} – {fmtRand(result.strongPrice)}
           </Text>
