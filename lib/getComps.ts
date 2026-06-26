@@ -35,6 +35,11 @@ export interface Transaction {
   condition_rating?: number;
   enrichment_notes?: string;
   is_enriched?: boolean;
+  bedrooms?: number;
+  bathrooms?: number;
+  has_pool?: boolean;
+  has_staff_accommodation?: boolean;
+  has_stairs?: boolean;
 }
 
 export interface OutlierBounds {
@@ -176,6 +181,11 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
         if (e.property_detail_type != null) comp.dwelling_type = String(e.property_detail_type);
         if (e.condition_rating != null) comp.condition_rating = Number(e.condition_rating);
         if (e.notes != null) comp.enrichment_notes = String(e.notes);
+        if (e.bedrooms != null) comp.bedrooms = Number(e.bedrooms);
+        if (e.bathrooms != null) comp.bathrooms = Number(e.bathrooms);
+        if (e.has_pool != null) comp.has_pool = Boolean(e.has_pool);
+        if (e.has_staff_accommodation != null) comp.has_staff_accommodation = Boolean(e.has_staff_accommodation);
+        if (e.has_stairs != null) comp.has_stairs = Boolean(e.has_stairs);
       }
     }
   }

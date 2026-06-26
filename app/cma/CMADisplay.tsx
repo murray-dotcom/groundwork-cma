@@ -6,6 +6,7 @@ import type { CompsResult, Transaction } from "@/lib/getComps";
 import type { TrendPoint } from "@/lib/getTrends";
 import type { EnrichmentData } from "@/components/EnrichmentPanel";
 import dynamic from "next/dynamic";
+import { supabase } from "@/lib/supabase";
 
 const PDFDownloadButton = dynamic(() => import("@/components/PDFDownloadButton"), { ssr: false });
 const TrendChart = dynamic(() => import("@/components/TrendChart"), { ssr: false });
@@ -75,6 +76,11 @@ function derivePrices(comps: Transaction[]) {
 
 export default function CMADisplay({ params, result, trends }: CMADisplayProps) {
   const router = useRouter();
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  }
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [narrative, setNarrative] = useState<string>("");
   const [narrativeLoading, setNarrativeLoading] = useState(true);
@@ -197,6 +203,13 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
             <p className="font-dm-sans text-cream/50 text-xs mt-0.5">
               Prepared: {today} | Lightstone Data
             </p>
+            <button
+              onClick={handleSignOut}
+              className="mt-2 font-cormorant text-xs text-cream/40 hover:text-cream/70 transition-colors"
+              data-no-print
+            >
+              Sign out
+            </button>
           </div>
         </div>
 

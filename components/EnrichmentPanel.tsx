@@ -10,6 +10,11 @@ export interface EnrichmentData {
   dwelling_type?: string;
   condition_rating?: number;
   enrichment_notes?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  has_pool?: boolean;
+  has_staff_accommodation?: boolean;
+  has_stairs?: boolean;
 }
 
 interface EnrichmentPanelProps {
@@ -59,6 +64,11 @@ export default function EnrichmentPanel({ titleDeedNo, estate, initial, onSaved,
   const [dwellingType, setDwellingType] = useState(initial.dwelling_type ?? "");
   const [conditionRating, setConditionRating] = useState(initial.condition_rating ?? 0);
   const [notes, setNotes] = useState(initial.enrichment_notes ?? "");
+  const [bedrooms, setBedrooms] = useState(initial.bedrooms?.toString() ?? "");
+  const [bathrooms, setBathrooms] = useState(initial.bathrooms?.toString() ?? "");
+  const [hasPool, setHasPool] = useState(initial.has_pool ?? false);
+  const [hasStaffAccommodation, setHasStaffAccommodation] = useState(initial.has_staff_accommodation ?? false);
+  const [hasStairs, setHasStairs] = useState(initial.has_stairs ?? false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -76,6 +86,11 @@ export default function EnrichmentPanel({ titleDeedNo, estate, initial, onSaved,
     if (dwellingType) payload.property_detail_type = dwellingType.toLowerCase();
     if (conditionRating > 0) payload.condition_rating = conditionRating;
     if (notes) payload.notes = notes;
+    if (bedrooms !== "") payload.bedrooms = Number(bedrooms);
+    if (bathrooms !== "") payload.bathrooms = Number(bathrooms);
+    payload.has_pool = hasPool;
+    payload.has_staff_accommodation = hasStaffAccommodation;
+    payload.has_stairs = hasStairs;
 
     const { error: err } = await supabase
       .from("property_attributes")
@@ -94,6 +109,11 @@ export default function EnrichmentPanel({ titleDeedNo, estate, initial, onSaved,
       dwelling_type: dwellingType || undefined,
       condition_rating: conditionRating > 0 ? conditionRating : undefined,
       enrichment_notes: notes || undefined,
+      bedrooms: bedrooms !== "" ? Number(bedrooms) : undefined,
+      bathrooms: bathrooms !== "" ? Number(bathrooms) : undefined,
+      has_pool: hasPool,
+      has_staff_accommodation: hasStaffAccommodation,
+      has_stairs: hasStairs,
     };
 
     onSaved(enrichmentData);
@@ -141,6 +161,51 @@ export default function EnrichmentPanel({ titleDeedNo, estate, initial, onSaved,
           <div>
             <label className={labelClass}>Condition Rating</label>
             <StarRating value={conditionRating} onChange={setConditionRating} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className={labelClass}>Bedrooms</label>
+            <input
+              type="number"
+              value={bedrooms}
+              onChange={(e) => setBedrooms(e.target.value)}
+              placeholder="e.g. 4"
+              min="1"
+              max="10"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Bathrooms</label>
+            <input
+              type="number"
+              value={bathrooms}
+              onChange={(e) => setBathrooms(e.target.value)}
+              placeholder="e.g. 3"
+              min="1"
+              max="10"
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className={labelClass}>Features</label>
+          <div className="flex flex-wrap gap-5 font-dm-sans text-sm text-gray-700">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={hasPool} onChange={(e) => setHasPool(e.target.checked)} className="accent-bronze w-4 h-4" />
+              Pool
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={hasStaffAccommodation} onChange={(e) => setHasStaffAccommodation(e.target.checked)} className="accent-bronze w-4 h-4" />
+              Staff accommodation
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={hasStairs} onChange={(e) => setHasStairs(e.target.checked)} className="accent-bronze w-4 h-4" />
+              Stairs
+            </label>
           </div>
         </div>
 
