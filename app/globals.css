@@ -5,3 +5,24 @@
 body {
   font-family: var(--font-dm-sans), sans-serif;
 }
+
+@media print {
+  [data-no-print] {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cma-section {
+    break-inside: avoid;
+  }
+
+  @page {
+    margin: 10mm;
+    size: A4;
+  }
+}

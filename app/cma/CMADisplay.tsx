@@ -166,19 +166,6 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const cmaData = {
-    params,
-    result: {
-      ...result,
-      comps: filteredComps,
-      ...prices,
-    },
-    notes,
-    narrative,
-    trends,
-    today,
-  };
-
   // router is used for back navigation via Link in parent; suppress unused warning
   void router;
 
@@ -186,14 +173,14 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
     <main className="min-h-screen bg-off-white py-8 px-4">
         {/* Low comps warning */}
         {filteredComps.length < 3 && (
-          <div className="max-w-5xl mx-auto mb-2 bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-yellow-800 font-cormorant text-sm">
+          <div className="max-w-5xl mx-auto mb-2 bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-yellow-800 font-cormorant text-sm" data-no-print>
             Only {filteredComps.length} comparable sale{filteredComps.length === 1 ? "" : "s"} found — results may be indicative only.
           </div>
         )}
       <div className="max-w-5xl mx-auto space-y-6" id="cma-report">
 
         {/* SECTION 1 — Header */}
-        <div className="bg-olive text-cream rounded-t-lg px-8 py-5 flex justify-between items-start">
+        <div className="cma-section bg-olive text-cream rounded-t-lg px-8 py-5 flex justify-between items-start">
           <div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -214,7 +201,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         </div>
 
         {/* SECTION 2 — Subject property strip */}
-        <div className="bg-white border border-sage/20 rounded-lg grid grid-cols-4 divide-x divide-sage/20">
+        <div className="cma-section bg-white border border-sage/20 rounded-lg grid grid-cols-4 divide-x divide-sage/20">
           {[
             { label: "Subject Property", value: params.address },
             { label: "ERF Size", value: `${params.erfSize} m²` },
@@ -240,7 +227,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
 
         {/* SECTION 3 — Negotiation position (if asking price provided) */}
         {params.askingPrice && params.askingPrice > 0 && (
-          <div className="bg-white border border-sage/20 rounded-lg p-6">
+          <div className="cma-section bg-white border border-sage/20 rounded-lg p-6">
             <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">Negotiation Position</h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="bg-cream rounded p-4 text-center">
@@ -263,14 +250,14 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         )}
 
         {/* SECTION 4 — Comparable sales table */}
-        <div className="bg-white border border-sage/20 rounded-lg overflow-hidden">
+        <div className="cma-section bg-white border border-sage/20 rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-sage/20 flex items-center justify-between gap-4 flex-wrap">
             <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase">
               {params.schemes && params.schemes.length > 0
                 ? `Comparable Sales — ${params.schemes.join(", ")}`
                 : "Comparable Sales"}
             </h2>
-            <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-4 flex-wrap" data-no-print>
               {canSwitchToBuilt && (
                 <div className="flex items-center gap-1 bg-cream rounded overflow-hidden text-xs font-dm-sans border border-sage/20">
                   <button
@@ -354,7 +341,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
                           className="w-full text-xs font-dm-sans border-b border-sage/30 bg-transparent focus:outline-none focus:border-bronze text-gray-600 placeholder-gray-300"
                         />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3" data-no-print>
                         <button
                           onClick={() => setExpandedEnrichmentId((id) => id === comp.id ? null : comp.id)}
                           className="font-cormorant text-xs text-sage hover:text-olive transition-colors whitespace-nowrap"
@@ -365,7 +352,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
                       </td>
                     </tr>
                     {expandedEnrichmentId === comp.id && (
-                      <tr>
+                      <tr data-no-print>
                         <td colSpan={8} className="p-0">
                           <EnrichmentPanel
                             titleDeedNo={comp.title_deed_no ?? comp.id}
@@ -394,7 +381,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         </div>
 
         {/* SECTION 4b — Price trend chart (screen only) */}
-        <div className="bg-white border border-sage/20 rounded-lg p-6">
+        <div className="cma-section bg-white border border-sage/20 rounded-lg p-6" data-no-print>
           <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">
             Price Trend — {params.estates.join(" + ")}
           </h2>
@@ -402,7 +389,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         </div>
 
         {/* SECTION 5 — Price indication panels */}
-        <div>
+        <div className="cma-section">
           <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-3">Market-Derived Price Indication</h2>
           <div className="grid grid-cols-3 gap-4">
             {[
@@ -420,7 +407,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         </div>
 
         {/* SECTION 6 — Recommended range + narrative */}
-        <div className="bg-white border border-sage/20 rounded-lg p-6">
+        <div className="cma-section bg-white border border-sage/20 rounded-lg p-6">
           <p className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-3">
             RECOMMENDED NEGOTIATED RANGE: {formatRand(prices.conservativePrice)} – {formatRand(prices.strongPrice)}
           </p>
@@ -432,7 +419,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         </div>
 
         {/* SECTION 7 — Footer */}
-        <div className="text-center py-4 border-t border-sage/20">
+        <div className="cma-section text-center py-4 border-t border-sage/20">
           <p className="font-cormorant text-xs text-sage/70 tracking-wider">
             This report is prepared for informational purposes only and does not constitute a formal valuation. Data sourced from Lightstone.
           </p>
@@ -443,7 +430,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
       </div>
 
       {/* PDF Download button */}
-      <PDFDownloadButton cmaData={cmaData} />
+      <PDFDownloadButton />
     </main>
   );
 }
