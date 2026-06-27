@@ -11,11 +11,13 @@ const ESTATES = [
   "Black Rock",
   "Brettenwood Coastal Estate",
   "Compensation Beach",
+  "Elaleni Coastal Estate",
   "Salt Rock",
   "Shakas Rock",
   "Thompsons Bay",
   "Umhlali Beach",
   "Willard Beach",
+  "Zululami Luxury Coastal Estate",
 ];
 
 const LOOKBACK_OPTIONS = [
