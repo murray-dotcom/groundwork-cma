@@ -99,6 +99,11 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
       dwelling_type: override.dwelling_type ?? c.dwelling_type,
       condition_rating: override.condition_rating ?? c.condition_rating,
       enrichment_notes: override.enrichment_notes ?? c.enrichment_notes,
+      bedrooms: override.bedrooms ?? c.bedrooms,
+      bathrooms: override.bathrooms ?? c.bathrooms,
+      has_pool: override.has_pool ?? c.has_pool,
+      has_staff_accommodation: override.has_staff_accommodation ?? c.has_staff_accommodation,
+      has_stairs: override.has_stairs ?? c.has_stairs,
       is_enriched: true,
     };
   });
@@ -374,6 +379,11 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
                               dwelling_type: comp.dwelling_type,
                               condition_rating: comp.condition_rating,
                               enrichment_notes: comp.enrichment_notes,
+                              bedrooms: comp.bedrooms,
+                              bathrooms: comp.bathrooms,
+                              has_pool: comp.has_pool,
+                              has_staff_accommodation: comp.has_staff_accommodation,
+                              has_stairs: comp.has_stairs,
                             }}
                             onSaved={(data) => {
                               setEnrichmentOverrides((prev) => ({ ...prev, [comp.id]: data }));
