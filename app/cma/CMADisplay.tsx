@@ -343,11 +343,15 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
                         {comp.is_enriched && <span className="ml-1 text-sage" title="Enriched">✎</span>}
                       </td>
                       <td className="px-4 py-3 font-dm-sans text-gray-600">{formatDate(comp.registration_date)}</td>
-                      <td className="px-4 py-3 font-dm-sans text-gray-600">{comp.size_m2}</td>
-                      <td className="px-4 py-3 font-dm-sans text-gray-600">{comp.built_area_m2 ?? "—"}</td>
+                      <td className="px-4 py-3 font-dm-sans text-gray-600">
+                        {isSectionalTitle ? "—" : comp.size_m2}
+                      </td>
+                      <td className="px-4 py-3 font-dm-sans text-gray-600">
+                        {isSectionalTitle ? Math.round(comp.size_m2) : (comp.built_area_m2 ?? "—")}
+                      </td>
                       <td className="px-4 py-3 font-dm-sans text-gray-800 font-medium">{formatRand(Number(comp.sales_price))}</td>
                       <td className="px-4 py-3 font-dm-sans">
-                        <span className="text-gray-400 text-xs">{formatRandPerM2(Number(comp.price_per_m2))} ERF</span>
+                        <span className="text-gray-400 text-xs">{formatRandPerM2(Number(comp.price_per_m2))} {isSectionalTitle ? "built area" : "ERF"}</span>
                         {comp.built_area_m2 && comp.built_area_m2 > 0 && (
                           <span className="block font-medium" style={{ color: "#B47A05" }}>
                             {formatRandPerM2(Math.round(comp.sales_price / comp.built_area_m2))} built
