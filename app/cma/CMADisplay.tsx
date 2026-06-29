@@ -60,16 +60,19 @@ function pricePercentile(sortedArr: number[], p: number): number {
   return sortedArr[lower] + (sortedArr[upper] - sortedArr[lower]) * (idx - lower);
 }
 
-function derivePrices(comps: Transaction[]) {
-  const salePrices = comps.map((c) => c.sales_price).filter((p) => p > 0).sort((a, b) => a - b);
-  const erfPpm = comps.map((c) => c.price_per_m2).filter((p) => p > 0).sort((a, b) => a - b);
+function derivePrices(comps: Transaction[], propertyType: string, erfSize: number, builtArea?: number) {
+  const subjectSize = propertyType === "sectional_title" && builtArea ? builtArea : erfSize;
+  const ratesPerM2 = comps.map((c) => c.price_per_m2).filter((p) => p > 0).sort((a, b) => a - b);
+  const p25 = pricePercentile(ratesPerM2, 25);
+  const p50 = pricePercentile(ratesPerM2, 50);
+  const p75 = pricePercentile(ratesPerM2, 75);
   return {
-    conservativePrice: pricePercentile(salePrices, 25),
-    midMarketPrice: pricePercentile(salePrices, 50),
-    strongPrice: pricePercentile(salePrices, 75),
-    p25PricePerM2: pricePercentile(erfPpm, 25),
-    medianPricePerM2: pricePercentile(erfPpm, 50),
-    p75PricePerM2: pricePercentile(erfPpm, 75),
+    conservativePrice: p25 * subjectSize,
+    midMarketPrice: p50 * subjectSize,
+    strongPrice: p75 * subjectSize,
+    p25PricePerM2: p25,
+    medianPricePerM2: p50,
+    p75PricePerM2: p75,
   };
 }
 
@@ -86,6 +89,10 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
   const today = new Date().toLocaleDateString("en-ZA", { day: "2-digit", month: "long", year: "numeric" });
 
   const { lower, upper } = result.outlierBounds;
+
+  const isSectionalTitle = params.propertyType === "sectional_title";
+  const rateLabel = isSectionalTitle ? "R/m² (built area)" : "R/m² (ERF)";
+  const defaultSubjectSize = isSectionalTitle && params.builtArea ? params.builtArea : params.erfSize;
 
   // Apply enrichment overrides onto comps
   const enrichedComps = result.comps.map((c) => {
@@ -137,7 +144,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
     };
   }
 
-  const erfPrices = excludeOutliers ? derivePrices(filteredComps) : {
+  const erfPrices = excludeOutliers ? derivePrices(filteredComps, params.propertyType, params.erfSize, params.builtArea) : {
     conservativePrice: result.conservativePrice,
     midMarketPrice: result.midMarketPrice,
     strongPrice: result.strongPrice,
@@ -261,7 +268,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
           <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">
             Price Trend — {params.estates.join(" + ")}
           </h2>
-          <TrendChart data={trends} estate={params.estates.join(", ")} />
+          <TrendChart data={trends} estate={params.estates.join(", ")} propertyType={params.propertyType} />
         </div>
 
         {/* SECTION 4 — Comparable sales table */}
@@ -318,7 +325,7 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
               <thead>
                 <tr className="bg-olive text-cream">
                   {["Address", "Sale Date", "ERF m²", "Built m²", "Sale Price",
-                    filteredComps.some((c) => c.built_area_m2) ? "R/m² ERF | BUILT" : "R/m²",
+                    filteredComps.some((c) => c.built_area_m2) ? "R/m² ERF | Built" : rateLabel,
                     "Note", ""].map((h, i) => (
                     <th key={i} className="font-cormorant text-xs tracking-wider uppercase px-4 py-3 text-left font-medium">
                       {h}
@@ -401,22 +408,31 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
         </div>
 
         {/* SECTION 5 — Price indication panels */}
-        <div className="cma-section">
-          <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-3">Market-Derived Price Indication</h2>
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: "Conservative", price: prices.conservativePrice, ppm: prices.p25PricePerM2, bg: "bg-sage" },
-              { label: "Mid-Market", price: prices.midMarketPrice, ppm: prices.medianPricePerM2, bg: "bg-olive" },
-              { label: "Strong Market", price: prices.strongPrice, ppm: prices.p75PricePerM2, bg: "bg-bronze" },
-            ].map(({ label, price, ppm, bg }) => (
-              <div key={label} className={`${bg} rounded-lg p-6 text-center`}>
-                <p className="font-cormorant text-xs uppercase tracking-widest text-cream/70 mb-2">{label}</p>
-                <p className="font-cinzel text-xl text-cream leading-tight">{formatRand(price)}</p>
-                <p className="font-dm-sans text-cream/60 text-xs mt-2">@ {formatRandPerM2(ppm)} {pricingMode === "built" ? "built" : "ERF"}</p>
+        {(() => {
+          const activeRateLabel = pricingMode === "built" && builtPrices ? "R/m² (built area)" : rateLabel;
+          const activeSubjectSize = pricingMode === "built" && builtPrices ? (params.builtArea ?? params.erfSize) : defaultSubjectSize;
+          return (
+            <div className="cma-section">
+              <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-3">Market-Derived Price Indication</h2>
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { label: "Conservative", price: prices.conservativePrice, ppm: prices.p25PricePerM2, bg: "bg-sage" },
+                  { label: "Mid-Market", price: prices.midMarketPrice, ppm: prices.medianPricePerM2, bg: "bg-olive" },
+                  { label: "Strong Market", price: prices.strongPrice, ppm: prices.p75PricePerM2, bg: "bg-bronze" },
+                ].map(({ label, price, ppm, bg }) => (
+                  <div key={label} className={`${bg} rounded-lg p-6 text-center`}>
+                    <p className="font-cormorant text-xs uppercase tracking-widest text-cream/70 mb-2">{label}</p>
+                    <p className="font-cinzel text-xl text-cream leading-tight">{formatRand(price)}</p>
+                    <p className="font-dm-sans text-cream/60 text-xs mt-2">
+                      {formatRandPerM2(ppm)} × {Math.round(activeSubjectSize).toLocaleString("en-ZA")} m²
+                    </p>
+                    <p className="font-dm-sans text-cream/40 text-[10px] mt-0.5">{activeRateLabel}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          );
+        })()}
 
         {/* SECTION 6 — Recommended range + narrative */}
         <div className="cma-section bg-white border border-sage/20 rounded-lg p-6">

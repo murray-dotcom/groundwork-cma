@@ -190,30 +190,29 @@ export async function getComps(params: CMAParams): Promise<CompsResult> {
     }
   }
 
-  // Price indications: percentiles of actual comp sale prices.
-  // ERF-based price_per_m2 from Lightstone is not suitable for
-  // built-area multiplication, so we derive values directly from
-  // the distribution of comparable sale prices.
-  const salePrices = finalComps
-    .map((c) => c.sales_price)
-    .filter((p) => p > 0)
-    .sort((a, b) => a - b);
+  // Price indications: P25/P50/P75 of the comp rate distribution × subject size.
+  // For freehold: price_per_m2 = sale_price / ERF m² (Lightstone), subject size = ERF m².
+  // For sectional title: price_per_m2 = sale_price / unit floor m² (Lightstone), subject size = built area m².
+  const subjectSize = propertyType === "sectional_title" && params.builtArea
+    ? params.builtArea
+    : erfSize;
 
-  const conservativePrice = percentile(salePrices, 25);
-  const midMarketPrice = percentile(salePrices, 50);
-  const strongPrice = percentile(salePrices, 75);
-
-  // ERF-based R/m² kept for reference labels on the panels only.
-  const erfPricesPerM2 = finalComps
+  const ratesPerM2 = finalComps
     .map((c) => c.price_per_m2)
     .filter((p) => p > 0)
     .sort((a, b) => a - b);
 
-  const p25PricePerM2 = percentile(erfPricesPerM2, 25);
-  const medianPricePerM2 = percentile(erfPricesPerM2, 50);
-  const p75PricePerM2 = percentile(erfPricesPerM2, 75);
+  const p25PricePerM2 = percentile(ratesPerM2, 25);
+  const medianPricePerM2 = percentile(ratesPerM2, 50);
+  const p75PricePerM2 = percentile(ratesPerM2, 75);
 
-  const outlierBounds = calculateOutlierBounds(salePrices);
+  const conservativePrice = p25PricePerM2 * subjectSize;
+  const midMarketPrice = medianPricePerM2 * subjectSize;
+  const strongPrice = p75PricePerM2 * subjectSize;
+
+  const outlierBounds = calculateOutlierBounds(
+    finalComps.map((c) => c.sales_price).filter((p) => p > 0)
+  );
 
   return {
     comps: finalComps,

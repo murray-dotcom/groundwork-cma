@@ -14,6 +14,7 @@ import type { TrendPoint } from "@/lib/getTrends";
 interface TrendChartProps {
   data: TrendPoint[];
   estate: string;
+  propertyType?: string;
 }
 
 function fmtYAxisLeft(value: number): string {
@@ -31,30 +32,32 @@ function fmtTooltipPrice(value: number): string {
   return `R ${Math.round(value).toLocaleString("en-ZA")}`;
 }
 
-function CustomTooltip({ active, payload, label }: {
-  active?: boolean;
-  payload?: Array<{ value: number; dataKey: string; payload: TrendPoint }>;
-  label?: string;
-}) {
-  if (!active || !payload?.length) return null;
-  const priceEntry = payload.find((p) => p.dataKey === "median_price");
-  const ppmEntry = payload.find((p) => p.dataKey === "median_price_per_m2");
-  const count = payload[0]?.payload?.count ?? 0;
-  return (
-    <div className="bg-white border border-sage/30 rounded px-3 py-2 shadow-sm font-dm-sans text-xs text-gray-700">
-      <p className="font-semibold text-olive mb-1">{label}</p>
-      {priceEntry && (
-        <p style={{ color: "#B47A05" }}>Median {fmtTooltipPrice(priceEntry.value)}</p>
-      )}
-      {ppmEntry && (
-        <p style={{ color: "#87825E" }}>R/m² ERF {fmtTooltipPrice(ppmEntry.value)}</p>
-      )}
-      <p className="text-sage/60 mt-0.5">
-        {count} sale{count === 1 ? "" : "s"}
-        {count === 1 && <span className="ml-1 italic">(indicative)</span>}
-      </p>
-    </div>
-  );
+function makeTooltip(ppmLabel: string) {
+  return function CustomTooltip({ active, payload, label }: {
+    active?: boolean;
+    payload?: Array<{ value: number; dataKey: string; payload: TrendPoint }>;
+    label?: string;
+  }) {
+    if (!active || !payload?.length) return null;
+    const priceEntry = payload.find((p) => p.dataKey === "median_price");
+    const ppmEntry = payload.find((p) => p.dataKey === "median_price_per_m2");
+    const count = payload[0]?.payload?.count ?? 0;
+    return (
+      <div className="bg-white border border-sage/30 rounded px-3 py-2 shadow-sm font-dm-sans text-xs text-gray-700">
+        <p className="font-semibold text-olive mb-1">{label}</p>
+        {priceEntry && (
+          <p style={{ color: "#B47A05" }}>Median {fmtTooltipPrice(priceEntry.value)}</p>
+        )}
+        {ppmEntry && (
+          <p style={{ color: "#87825E" }}>{ppmLabel} {fmtTooltipPrice(ppmEntry.value)}</p>
+        )}
+        <p className="text-sage/60 mt-0.5">
+          {count} sale{count === 1 ? "" : "s"}
+          {count === 1 && <span className="ml-1 italic">(indicative)</span>}
+        </p>
+      </div>
+    );
+  };
 }
 
 function CustomDotBronze(props: { cx?: number; cy?: number; payload?: TrendPoint }) {
@@ -85,7 +88,9 @@ function CustomDotSage(props: { cx?: number; cy?: number; payload?: TrendPoint }
   );
 }
 
-export default function TrendChart({ data, estate }: TrendChartProps) {
+export default function TrendChart({ data, estate, propertyType }: TrendChartProps) {
+  const ppmLabel = propertyType === "sectional_title" ? "R/m² (built area)" : "R/m² (ERF)";
+  const CustomTooltip = makeTooltip(ppmLabel);
   const limitedData = data.length > 0 && data.length < 4;
 
   if (data.length === 0) {
@@ -158,7 +163,7 @@ export default function TrendChart({ data, estate }: TrendChartProps) {
         </span>
         <span className="flex items-center gap-1.5">
           <span style={{ display: "inline-block", width: 20, height: 0, borderTop: "2px dashed #87825E" }} />
-          Median R/m² ERF
+          Median {ppmLabel}
         </span>
         <span className="text-sage/40">· {estate}</span>
       </div>
