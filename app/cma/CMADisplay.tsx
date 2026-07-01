@@ -4,8 +4,11 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { CompsResult, Transaction } from "@/lib/getComps";
 import type { TrendPoint } from "@/lib/getTrends";
+import type { Listing } from "@/lib/getListings";
 import type { EnrichmentData } from "@/components/EnrichmentPanel";
 import dynamic from "next/dynamic";
+import ActiveListingsPanel from "@/components/ActiveListingsPanel";
+import RentalYieldPanel from "@/components/RentalYieldPanel";
 
 const PDFDownloadButton = dynamic(() => import("@/components/PDFDownloadButton"), { ssr: false });
 const TrendChart = dynamic(() => import("@/components/TrendChart"), { ssr: false });
@@ -25,6 +28,8 @@ interface CMADisplayProps {
   };
   result: CompsResult;
   trends: TrendPoint[];
+  activeListings: Listing[];
+  rentals: Listing[];
 }
 
 function formatRand(n: number) {
@@ -76,7 +81,7 @@ function derivePrices(comps: Transaction[], propertyType: string, erfSize: numbe
   };
 }
 
-export default function CMADisplay({ params, result, trends }: CMADisplayProps) {
+export default function CMADisplay({ params, result, trends, activeListings, rentals }: CMADisplayProps) {
   const router = useRouter();
 
   const [notes, setNotes] = useState<Record<string, string>>({});
@@ -263,14 +268,6 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
           </div>
         )}
 
-        {/* SECTION 3b — Price trend chart */}
-        <div className="cma-section bg-white border border-sage/20 rounded-lg p-6">
-          <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">
-            Price Trend — {params.estates.join(" + ")}
-          </h2>
-          <TrendChart data={trends} estate={params.estates.join(", ")} propertyType={params.propertyType} />
-        </div>
-
         {/* SECTION 4 — Comparable sales table */}
         <div className="cma-section bg-white border border-sage/20 rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-sage/20 flex items-center justify-between gap-4 flex-wrap">
@@ -410,6 +407,27 @@ export default function CMADisplay({ params, result, trends }: CMADisplayProps) 
             </table>
           </div>
         </div>
+
+        {/* SECTION 4b — Active listings */}
+        <ActiveListingsPanel
+          listings={activeListings}
+          estateLabel={params.estates.join(" + ")}
+        />
+
+        {/* SECTION 4c — Price trend chart */}
+        <div className="cma-section bg-white border border-sage/20 rounded-lg p-6">
+          <h2 className="font-cinzel text-xs tracking-[0.2em] text-olive uppercase mb-4">
+            Price Trend — {params.estates.join(" + ")}
+          </h2>
+          <TrendChart data={trends} estate={params.estates.join(", ")} propertyType={params.propertyType} />
+        </div>
+
+        {/* SECTION 4d — Rental yield */}
+        <RentalYieldPanel
+          rentals={rentals}
+          midMarketPrice={prices.midMarketPrice}
+          estateLabel={params.estates.join(" + ")}
+        />
 
         {/* SECTION 5 — Price indication panels */}
         {(() => {

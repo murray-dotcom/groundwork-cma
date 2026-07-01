@@ -1,6 +1,8 @@
 import { getComps } from "@/lib/getComps";
 import { getTrends } from "@/lib/getTrends";
 import type { TrendPoint } from "@/lib/getTrends";
+import { getActiveListings, getActiveRentals } from "@/lib/getListings";
+import type { Listing } from "@/lib/getListings";
 import CMADisplay from "./CMADisplay";
 import Link from "next/link";
 
@@ -47,12 +49,16 @@ export default async function CMAPage({ searchParams }: PageProps) {
 
   let result;
   let trends: TrendPoint[] = [];
+  let activeListings: Listing[] = [];
+  let rentals: Listing[] = [];
   let error: string | null = null;
 
   try {
-    [result, trends] = await Promise.all([
+    [result, trends, activeListings, rentals] = await Promise.all([
       getComps({ estates, propertyType, schemes, erfSize, builtArea, lookback, tolerance }),
       getTrends({ estates, propertyType, schemes }).catch(() => [] as TrendPoint[]),
+      getActiveListings(estates, schemes ?? null, propertyType).catch(() => [] as Listing[]),
+      getActiveRentals(estates, schemes ?? null, propertyType).catch(() => [] as Listing[]),
     ]);
   } catch (e: unknown) {
     error = e instanceof Error ? e.message : "Failed to fetch comparable sales.";
@@ -87,5 +93,5 @@ export default async function CMAPage({ searchParams }: PageProps) {
     );
   }
 
-  return <CMADisplay params={params} result={result} trends={trends} />;
+  return <CMADisplay params={params} result={result} trends={trends} activeListings={activeListings} rentals={rentals} />;
 }
